@@ -2,7 +2,7 @@ import { Vector } from './vector';
 
 export class MassPoint {
 
-  constructor(public r: Vector, public mass: number) {
+  constructor(public r: Vector = new Vector(), public mass: number = 0) {
   }
 
   add(p: MassPoint) {

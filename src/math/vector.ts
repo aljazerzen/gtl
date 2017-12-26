@@ -1,6 +1,6 @@
 export class Vector {
 
-  constructor(public x: number, public y: number) {
+  constructor(public x: number = 0, public y: number = 0) {
   }
 
   clone() {
@@ -42,7 +42,7 @@ export class Vector {
   }
 
   multiplyScalar(a: Vector): number {
-    return a.x * this.x + a.y + this.y;
+    return a.x * this.x + a.y * this.y;
   }
 
   multiplyMatrix(a: Vector[]) {
@@ -51,7 +51,7 @@ export class Vector {
     return new Vector(a[0].x * this.x + a[1].x * this.y, a[0].y * this.x + a[1].y * this.y);
   }
 
-  rotate(t: number) {
+  rotation(t: number) {
     return this.multiplyMatrix([
       new Vector(Math.cos(t), Math.sin(t)),
       new Vector(-Math.sin(t), Math.cos(t)),
@@ -59,11 +59,19 @@ export class Vector {
   }
 
   rotateAround(a: Vector, t: number) {
-    return this.subtract(a).rotate(t).add(a);
+    return this.subtract(a).rotation(t).add(a);
   }
 
   get length() {
     return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
+
+  angle(a: Vector) {
+    return Math.acos(this.multiplyScalar(a) / this.length / a.length);
+  }
+
+  direction() {
+    return this.product(1 / this.length);
   }
 
 }

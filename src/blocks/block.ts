@@ -1,5 +1,6 @@
 import { Vector } from '../math/vector';
 import { MassPoint } from '../math/mass-point';
+import { ForcePoint } from '../math/force-point';
 
 export abstract class Block {
 
@@ -14,4 +15,7 @@ export abstract class Block {
 
   abstract get massPoint(): MassPoint;
 
+  thrust(): ForcePoint {
+    return null;
+  };
 }
