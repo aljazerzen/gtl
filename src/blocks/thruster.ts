@@ -41,10 +41,15 @@ export class Thruster extends Polygon {
   thrustVector: Vector;
 
   thrust(): ForcePoint {
-    return new ForcePoint(this.thrustPosition, this.thrustVector.product(this.throttle));
+    let f = this.thrustVector.product(this.throttle);
+    let r = this.thrustPosition;
+
+    return new ForcePoint(Math.sin(r.angleDirection(f)) * r.length * f.length, f);
   };
 
   thrustUnthrottled(): ForcePoint {
-    return new ForcePoint(this.thrustPosition, this.thrustVector);
+    let f = this.thrustVector;
+    let r = this.thrustPosition;
+    return new ForcePoint(Math.sin(r.angleDirection(f)) * r.length * f.length, f.clone());
   };
 }

@@ -44,7 +44,7 @@ export class Entity {
     for (let block of this.blocks) {
       relative.add(block.thrust());
     }
-    return new ForcePoint(relative.r.rotation(this.f), relative.f.rotation(this.f));
+    return new ForcePoint(relative.torque, relative.f.rotation(this.f));
   }
 
   thrustUnthrottled(): ForcePoint {
@@ -52,7 +52,7 @@ export class Entity {
     for (let block of this.blocks) {
       relative.add(block.thrustUnthrottled());
     }
-    return new ForcePoint(relative.r.rotation(this.f), relative.f.rotation(this.f));
+    return new ForcePoint(relative.torque, relative.f.rotation(this.f));
   }
 
   static createMock(x: number, y: number): Entity {
@@ -65,7 +65,7 @@ export class Entity {
   static createMockThruster(x: number, y: number): Entity {
     let r = new Entity();
     r.r = new Vector(x, y);
-    r.addBlocks([new Thruster(60, 0, 40, 0), new Circle(120, 0, 60), new Thruster(120, 0, 40, 2), new Circle(-30, 0, 60)]);
+    r.addBlocks([new Thruster(80, 0, 40, 0), new Circle(60, 0, 60), new Thruster(-80, 0, 40, 0.5), new Circle(-60, 0, 60)]);
     return r;
   }
 

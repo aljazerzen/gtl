@@ -48,11 +48,13 @@ export class Renderer {
 
       this.ctx.strokeStyle = Renderer.colors[3];
       let thrust = entity.thrust();
-      this.drawVector(entity.r.sum(thrust.r), thrust.f);
+      if (!thrust.f.isZero())
+        this.drawVector(entity.r, thrust.f);
 
       this.ctx.strokeStyle = Renderer.colors[2];
       let thrustUnthrottled = entity.thrustUnthrottled();
-      this.drawVector(entity.r.sum(thrustUnthrottled.r), thrustUnthrottled.f);
+      if (!thrustUnthrottled.f.isZero())
+        this.drawVector(entity.r, thrustUnthrottled.f);
 
       this.ctx.strokeStyle = Renderer.colors[3];
       this.drawCross(entity.massPoint().r, 3);

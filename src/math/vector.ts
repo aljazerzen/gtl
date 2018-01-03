@@ -8,7 +8,8 @@ export class Vector {
   }
 
   isZero() {
-    return this.x == 0 && this.y == 0;
+    // noinspection JSSuspiciousNameCombination
+    return Math.abs(this.x) < 0.000001 && Math.abs(this.y) < 0.000001;
   }
 
   sum(a: Vector) {
