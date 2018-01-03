@@ -1,6 +1,6 @@
 import { Engine } from './engine';
 import { Vector } from '../math/vector';
-import { Controls } from '../controls';
+import { Controls } from '../ui/controls';
 import { Thruster } from '../blocks/thruster';
 
 export class StepperEngine extends Engine {

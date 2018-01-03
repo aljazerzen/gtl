@@ -4,7 +4,8 @@ import { World } from './world';
 import { Vector } from './math/vector';
 import { Thruster } from './blocks/thruster';
 import { Polygon } from './blocks/polygon';
-import { Controls } from './controls';
+import { Controls } from './ui/controls';
+import { Hud } from './ui/hud';
 
 export class Renderer {
 
@@ -18,7 +19,7 @@ export class Renderer {
     this.ctx.lineWidth = 1;
   }
 
-  public render(world: World, controls: Controls) {
+  public render(world: World, hud: Hud) {
     this.clear();
 
     world.entities.forEach(entity => {
@@ -26,7 +27,7 @@ export class Renderer {
 
         const position = entity.r.sum(block.offset.rotation(entity.f));
 
-        this.ctx.fillStyle = Renderer.colors[block.color];
+        this.setStyle(block.color);
         if (block instanceof Circle) {
           this.drawCircle(position, block.r);
         } else if (block instanceof Polygon) {
@@ -34,56 +35,41 @@ export class Renderer {
         }
 
         if (block instanceof Thruster) {
-          this.ctx.strokeStyle = Renderer.colors[4];
+          this.setStyle(4);
           this.drawVector(
             block.thrustPosition.rotation(entity.f).sum(entity.r),
             block.thrustVector.rotation(entity.f));
 
-          this.ctx.strokeStyle = Renderer.colors[3];
+          this.setStyle(3);
           this.drawVector(entity.r, block.thrustPosition.rotation(entity.f));
         }
 
         // this.drawCross(block.massPoint.r.clone().rotation(entity.f).sum(entity.r), 3);
       });
 
-      this.ctx.strokeStyle = Renderer.colors[3];
+      this.setStyle(3);
       let thrust = entity.thrust();
       if (!thrust.f.isZero())
         this.drawVector(entity.r, thrust.f);
 
-      this.ctx.strokeStyle = Renderer.colors[2];
+      this.setStyle(2);
       let thrustUnthrottled = entity.thrustUnthrottled();
       if (!thrustUnthrottled.f.isZero())
         this.drawVector(entity.r, thrustUnthrottled.f);
 
-      this.ctx.strokeStyle = Renderer.colors[3];
+      this.setStyle(3);
       this.drawCross(entity.massPoint().r, 3);
 
-      // this.ctx.strokeStyle = Renderer.colors[2];
+      // this.setStyle(2);
       // this.drawCross(entity.r, 5);
     });
 
-    if (world.center && world.center.mass !== undefined) {
-      this.ctx.strokeStyle = Renderer.colors[1];
-      this.drawCross(world.center.r, 10);
-    }
+    hud.draw(this);
+  }
 
-    this.ctx.fillStyle = controls.rotationDampeners ? Renderer.colors[2] : Renderer.colors[1];
-    this.drawRectangle(new Vector(15, 15), new Vector(10, 10), 0);
-
-    if (controls.controlling) {
-      let i = 0;
-      controls.controlling.blocks.forEach(block => {
-        if (block instanceof Thruster) {
-          this.ctx.fillStyle = Renderer.colors[1];
-          this.drawRectangle(new Vector(30 + i * 15, 15), new Vector(10, 30), 0);
-
-          this.ctx.fillStyle = Renderer.colors[2];
-          this.drawRectangle(new Vector(30 + i * 15, 15), new Vector(10, 30 * block.throttle), 0);
-          i++;
-        }
-      });
-    }
+  setStyle(style: number) {
+    this.ctx.fillStyle = Renderer.colors[style];
+    this.ctx.strokeStyle = Renderer.colors[style];
   }
 
   drawCircle(s: Vector, r: number) {

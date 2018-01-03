@@ -83,4 +83,12 @@ export class Vector {
     return this.product(1 / this.length);
   }
 
+  horizontal(): Vector {
+    return new Vector(this.x, 0);
+  }
+
+  vertical(): Vector {
+    return new Vector(0, this.y);
+  }
+
 }
