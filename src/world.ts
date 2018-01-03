@@ -14,7 +14,7 @@ export class World {
     r.entities[0].vf = 0.00;
     r.entities[0].f = Math.PI / 6;
 
-    r.entities[1].vf = 0.000;
+    r.entities[1].f = Math.PI;
     // r.entities[1].v.x = 0.1;
     return r;
   }

@@ -37,11 +37,22 @@ export class Renderer {
           this.ctx.strokeStyle = Renderer.colors[4];
           this.drawVector(
             block.thrustPosition.rotation(entity.f).sum(entity.r),
-            block.thrustVector.product(10).rotation(entity.f));
+            block.thrustVector.rotation(entity.f));
+
+          this.ctx.strokeStyle = Renderer.colors[3];
+          this.drawVector(entity.r, block.thrustPosition.rotation(entity.f));
         }
 
         // this.drawCross(block.massPoint.r.clone().rotation(entity.f).sum(entity.r), 3);
       });
+
+      this.ctx.strokeStyle = Renderer.colors[3];
+      let thrust = entity.thrust();
+      this.drawVector(entity.r.sum(thrust.r), thrust.f);
+
+      this.ctx.strokeStyle = Renderer.colors[2];
+      let thrustUnthrottled = entity.thrustUnthrottled();
+      this.drawVector(entity.r.sum(thrustUnthrottled.r), thrustUnthrottled.f);
 
       this.ctx.strokeStyle = Renderer.colors[3];
       this.drawCross(entity.massPoint().r, 3);
@@ -58,18 +69,18 @@ export class Renderer {
     this.ctx.fillStyle = controls.rotationDampeners ? Renderer.colors[2] : Renderer.colors[1];
     this.drawRectangle(new Vector(15, 15), new Vector(10, 10), 0);
 
-    if(controls.controlling) {
+    if (controls.controlling) {
       let i = 0;
       controls.controlling.blocks.forEach(block => {
-        if(block instanceof Thruster) {
+        if (block instanceof Thruster) {
           this.ctx.fillStyle = Renderer.colors[1];
-          this.drawRectangle(new Vector(30 + i*15, 15), new Vector(10, 30), 0);
+          this.drawRectangle(new Vector(30 + i * 15, 15), new Vector(10, 30), 0);
 
           this.ctx.fillStyle = Renderer.colors[2];
-          this.drawRectangle(new Vector(30 + i*15, 15), new Vector(10, 30 * block.throttle), 0);
+          this.drawRectangle(new Vector(30 + i * 15, 15), new Vector(10, 30 * block.throttle), 0);
           i++;
         }
-      })
+      });
     }
   }
 

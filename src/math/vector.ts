@@ -7,6 +7,10 @@ export class Vector {
     return new Vector(this.x, this.y);
   }
 
+  isZero() {
+    return this.x == 0 && this.y == 0;
+  }
+
   sum(a: Vector) {
     return new Vector(this.x + a.x, this.y + a.y);
   }
@@ -68,6 +72,10 @@ export class Vector {
 
   angle(a: Vector) {
     return Math.acos(this.multiplyScalar(a) / this.length / a.length);
+  }
+
+  angleDirection(a: Vector) {
+    return Math.atan2(a.y, a.x) - Math.atan2(this.y, this.x);
   }
 
   direction() {

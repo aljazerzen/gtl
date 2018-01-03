@@ -18,4 +18,8 @@ export abstract class Block {
   thrust(): ForcePoint {
     return null;
   };
+
+  thrustUnthrottled(): ForcePoint {
+    return null;
+  };
 }

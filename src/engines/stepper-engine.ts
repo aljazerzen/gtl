@@ -26,7 +26,7 @@ export class StepperEngine extends Engine {
       // Thrust
       const thrust = entity.thrust();
       dv.add(thrust.f.product(1 / massPoint.mass));
-      dfv -= thrust.r * thrust.f.length / entity.inertia || 0;
+      dfv += Math.sin(thrust.r.angleDirection(thrust.f)) * thrust.r.length * thrust.f.length / entity.inertia || 0;
 
       if(controls.controlling == entity) {
         if (controls.up) {
