@@ -16,9 +16,9 @@ export class Entity {
   public blocks: Block[] = [];
 
   addBlocks(blocks: Block[]) {
-    this.blocks = this.blocks.concat(blocks);
+    this.blocks.push(...blocks);
     const massPoint = this.massPoint();
-    const correction = this.r.difference(massPoint.r);
+    const correction = this.r.difference(massPoint.r).rotate(-this.f);
 
     this.blocks.forEach(block => block.offset.add(correction));
     this.r = massPoint.r;
@@ -58,14 +58,14 @@ export class Entity {
   static createMock(x: number, y: number): Entity {
     let r = new Entity();
     r.r = new Vector(x, y);
-    r.addBlocks([new Rectangle(-5, 50, 10, 5), new Circle(0, -50, 10)]);
+    r.addBlocks([new Rectangle(new Vector(-5, 50), new Vector(10, 5)), new Circle(new Vector(0, -50), 10)]);
     return r;
   }
 
   static createMockThruster(x: number, y: number): Entity {
     let r = new Entity();
     r.r = new Vector(x, y);
-    r.addBlocks([new Thruster(80, 0, 40, 0), new Circle(60, 0, 60), new Thruster(-80, 0, 40, 0.5), new Circle(-60, 0, 60)]);
+    r.addBlocks([new Thruster(new Vector(80, 0), 40, 0), new Circle(new Vector(60, 0), 60), new Thruster(new Vector(-80, 0), 40, 0.5), new Circle(new Vector(-60, 0), 60)]);
     return r;
   }
 

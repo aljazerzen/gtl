@@ -9,8 +9,8 @@ export class Thruster extends Polygon {
 
   points: Vector[];
 
-  constructor(x: number, y: number, width: number, d: number) {
-    super(x, y);
+  constructor(r: Vector, width: number, d: number) {
+    super(r);
     const f = Math.PI / 2 * d;
     this.points = [
       new Vector(),
@@ -52,4 +52,9 @@ export class Thruster extends Polygon {
     let r = this.thrustPosition;
     return new ForcePoint(Math.sin(r.angleDirection(f)) * r.length * f.length, f.clone());
   };
+
+  rotate(t: number) {
+    super.rotate(t);
+    this.thrustVector.rotate(t);
+  }
 }

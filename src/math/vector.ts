@@ -56,15 +56,18 @@ export class Vector {
     return new Vector(a[0].x * this.x + a[1].x * this.y, a[0].y * this.x + a[1].y * this.y);
   }
 
+  rotate(t: number) {
+    const rotation = this.rotation(t);
+    this.x = rotation.x;
+    this.y = rotation.y;
+    return this;
+  }
+
   rotation(t: number) {
     return this.multiplyMatrix([
       new Vector(Math.cos(t), Math.sin(t)),
       new Vector(-Math.sin(t), Math.cos(t)),
     ]);
-  }
-
-  rotateAround(a: Vector, t: number) {
-    return this.subtract(a).rotation(t).add(a);
   }
 
   get length() {

@@ -7,52 +7,94 @@ export class Controls {
   down = false;
   left = false;
   right = false;
+  rotatePlacingRight = false;
+  rotatePlacingLeft = false;
   rotationDampeners = false;
 
   controlling: Entity;
 
-  onclickListeners: ((c: Vector) => boolean)[] = [];
+  onclickListeners: ((c: Vector) => DragElement)[] = [];
+  currentDragElement: DragElement;
 
   constructor() {
   }
 
   setListeners() {
-    window.document.onkeydown = (event) => this.onkeydown(event);
-    window.document.onkeyup = (event) => this.onkeyup(event);
+    window.document.onkeydown = (event) => this.keyboardEvent(event, true);
+    window.document.onkeyup = (event) => this.keyboardEvent(event, false);
     window.document.onmousedown = (event) => this.onmousedown(event);
+    window.document.onmousemove = (event) => this.onmousemove(event);
+    window.document.onmouseup = (event) => this.onmouseup(event);
   }
 
-  keyboardEvent(event: KeyboardEvent, actions: any) {
-    if (actions[event.key])
-      actions[event.key]();
-    else
+  static toggles: any = {
+    'p': 'rotationDampeners',
+  };
+
+  static bindings: any = {
+    'ArrowDown': 'down',
+    'ArrowUp': 'up',
+    'ArrowLeft': 'left',
+    'ArrowRight': 'right',
+    'e': 'rotatePlacingLeft',
+    'q': 'rotatePlacingRight',
+  };
+
+  keyboardEvent(event: KeyboardEvent, down: boolean) {
+    const taa = this as any;
+    const toggle = Controls.toggles[event.key];
+    if (toggle && down) {
+      taa[toggle] = !taa[toggle];
+    }
+
+    const binding = Controls.bindings[event.key];
+    if(binding) {
+      taa[binding] = down;
+    }
+    if(!toggle && !binding)
       console.log(event.key);
-  }
-
-  onkeydown(event: KeyboardEvent) {
-    this.keyboardEvent(event, {
-      'ArrowDown': () => this.down = true,
-      'ArrowUp': () => this.up = true,
-      'ArrowLeft': () => this.left = true,
-      'ArrowRight': () => this.right = true,
-      'p': () => this.rotationDampeners = !this.rotationDampeners,
-    });
-  }
-
-  onkeyup(event: KeyboardEvent) {
-    this.keyboardEvent(event, {
-      'ArrowDown': () => this.down = false,
-      'ArrowUp': () => this.up = false,
-      'ArrowLeft': () => this.left = false,
-      'ArrowRight': () => this.right = false
-    });
   }
 
   onmousedown(event: MouseEvent) {
     let c = new Vector(event.clientX, event.clientY);
-    for(let l of this.onclickListeners) {
-      if(l(c))
+    for (let l of this.onclickListeners) {
+      const dragElement = l(c);
+      if (dragElement) {
+        this.currentDragElement = dragElement;
         break;
+      }
     }
   }
+
+  onmousemove(event: MouseEvent) {
+    if (this.currentDragElement) {
+      let c = new Vector(event.clientX, event.clientY);
+
+      if (!this.currentDragElement.move(c, this)) {
+
+        this.onmouseup(event);
+
+      }
+    }
+  }
+
+  onmouseup(event: MouseEvent) {
+    if (this.currentDragElement) {
+      let c = new Vector(event.clientX, event.clientY);
+
+      if (!this.currentDragElement.end(c, this))
+        delete this.currentDragElement;
+    }
+  }
+
+}
+
+export interface DragElement {
+
+  // return true to continue drag
+  move(c: Vector, controls: Controls): boolean | void;
+
+  // return true to continue drag
+  end(c: Vector, controls: Controls): boolean | void;
+
 }

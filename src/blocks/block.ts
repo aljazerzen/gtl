@@ -7,8 +7,8 @@ export abstract class Block {
   color: number = 1;
   offset: Vector;
 
-  constructor(x: number, y: number) {
-    this.offset = new Vector(x, y);
+  constructor(r: Vector) {
+    this.offset = r.clone();
   }
 
   abstract get mass(): number;
@@ -22,4 +22,6 @@ export abstract class Block {
   thrustUnthrottled(): ForcePoint {
     return null;
   };
+
+  abstract rotate(t: number): void;
 }

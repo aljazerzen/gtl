@@ -1,11 +1,12 @@
 import { Button } from './button';
 import { Vector } from '../math/vector';
 import { Renderer } from '../renderer';
+import { Hud } from './hud';
 
 export class ToggleButton extends Button {
 
-  constructor(r: Vector, toggle: (a: Button) => void, protected isActive: () => boolean) {
-    super(r, new Vector(15, 15), toggle);
+  constructor(r: Vector, context: Hud, toggle: (a: Button) => void, protected isActive: () => boolean) {
+    super(r, context, new Vector(15, 15), toggle);
   }
 
   draw(renderer: Renderer) {

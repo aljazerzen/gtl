@@ -5,4 +5,8 @@ export abstract class Polygon extends Block {
 
   abstract get points(): Vector[];
 
+  rotate(t: number): void {
+    this.points.forEach(point => point.rotate(t));
+  }
+
 }

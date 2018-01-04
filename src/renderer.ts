@@ -4,7 +4,6 @@ import { World } from './world';
 import { Vector } from './math/vector';
 import { Thruster } from './blocks/thruster';
 import { Polygon } from './blocks/polygon';
-import { Controls } from './ui/controls';
 import { Hud } from './ui/hud';
 
 export class Renderer {
@@ -25,27 +24,27 @@ export class Renderer {
     world.entities.forEach(entity => {
       entity.blocks.forEach((block: Block) => {
 
-        const position = entity.r.sum(block.offset.rotation(entity.f));
+        this.drawBlock(block, entity.r, entity.f);
 
-        this.setStyle(block.color);
-        if (block instanceof Circle) {
-          this.drawCircle(position, block.r);
-        } else if (block instanceof Polygon) {
-          this.drawPolygon(position, block.points, entity.f);
-        }
-
+        // thruster forces
         if (block instanceof Thruster) {
+          // thrust vector
           this.setStyle(4);
           this.drawVector(
             block.thrustPosition.rotation(entity.f).sum(entity.r),
-            block.thrustVector.rotation(entity.f));
+            block.thrust().f.rotation(entity.f));
 
-          this.setStyle(3);
-          this.drawVector(entity.r, block.thrustPosition.rotation(entity.f));
+          // thrust position
+          // this.setStyle(3);
+          // this.drawVector(entity.r, block.thrustPosition.rotation(entity.f));
         }
 
         // this.drawCross(block.massPoint.r.clone().rotation(entity.f).sum(entity.r), 3);
       });
+
+      this.setStyle(4);
+      if (!entity.v.isZero())
+        this.drawVector(entity.r, entity.v.product(100));
 
       this.setStyle(3);
       let thrust = entity.thrust();
@@ -70,6 +69,15 @@ export class Renderer {
   setStyle(style: number) {
     this.ctx.fillStyle = Renderer.colors[style];
     this.ctx.strokeStyle = Renderer.colors[style];
+  }
+
+  drawBlock(block: Block, entityPosition: Vector = new Vector, f: number = 0) {
+    this.setStyle(block.color);
+    if (block instanceof Circle) {
+      this.drawCircle(entityPosition.sum(block.offset.rotation(f)), block.r);
+    } else if (block instanceof Polygon) {
+      this.drawPolygon(entityPosition.sum(block.offset.rotation(f)), block.points, f);
+    }
   }
 
   drawCircle(s: Vector, r: number) {

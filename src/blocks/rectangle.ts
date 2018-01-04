@@ -10,9 +10,9 @@ export class Rectangle extends Polygon {
     return this._points;
   }
 
-  constructor(x: number, y: number, w: number, h: number) {
-    super(x, y);
-    this._points = [new Vector(), new Vector(w, 0), new Vector(w, h), new Vector(0, h)];
+  constructor(r: Vector, size: Vector) {
+    super(r);
+    this._points = [new Vector(), size.horizontal(), size.clone(), size.vertical()];
   }
 
   get mass(): number {

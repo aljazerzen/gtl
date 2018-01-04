@@ -26,6 +26,7 @@ const targetFPS = 60;
 function tick() {
 
   engine.tick(controls);
+  hud.tick();
   renderer.render(engine.getWorld(), hud);
 
   setTimeout(tick, lastTick + 1000 / targetFPS - Date.now());

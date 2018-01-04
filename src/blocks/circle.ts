@@ -1,10 +1,10 @@
 import { Block } from './block';
 import { MassPoint } from '../math/mass-point';
+import { Vector } from '../math/vector';
 
 export class Circle extends Block {
-
-  constructor(x: number, y: number, public r: number) {
-    super(x, y);
+  constructor(s: Vector, public r: number) {
+    super(s);
   }
 
   get mass(): number {
@@ -13,6 +13,9 @@ export class Circle extends Block {
 
   get massPoint(): MassPoint {
     return new MassPoint(this.offset, this.mass);
+  }
+
+  rotate(): void {
   }
 
 }
