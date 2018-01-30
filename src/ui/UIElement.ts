@@ -16,9 +16,12 @@ export abstract class UIElement implements DragElement {
   tick(controls: Controls) {
   }
 
-  move(c: Vector, controls: Controls): boolean|void {
+  move(c: Vector, controls: Controls): boolean | void {
   }
 
-  end(c: Vector, controls: Controls): boolean|void {
+  end(c: Vector, controls: Controls): boolean | void {
+  }
+
+  wheel(delta: number): void {
   }
 }

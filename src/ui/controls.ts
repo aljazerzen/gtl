@@ -25,6 +25,7 @@ export class Controls {
     window.document.onmousedown = (event) => this.onmousedown(event);
     window.document.onmousemove = (event) => this.onmousemove(event);
     window.document.onmouseup = (event) => this.onmouseup(event);
+    window.document.onwheel = (event) => this.wheel(event);
   }
 
   static toggles: any = {
@@ -48,10 +49,10 @@ export class Controls {
     }
 
     const binding = Controls.bindings[event.key];
-    if(binding) {
+    if (binding) {
       taa[binding] = down;
     }
-    if(!toggle && !binding)
+    if (!toggle && !binding)
       console.log(event.key);
   }
 
@@ -87,6 +88,11 @@ export class Controls {
     }
   }
 
+  wheel(event: WheelEvent) {
+    if (this.currentDragElement)
+      this.currentDragElement.wheel(event.deltaY / 100);
+  }
+
 }
 
 export interface DragElement {
@@ -97,4 +103,5 @@ export interface DragElement {
   // return true to continue drag
   end(c: Vector, controls: Controls): boolean | void;
 
+  wheel(delta: number): void;
 }

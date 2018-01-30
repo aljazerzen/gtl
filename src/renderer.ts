@@ -29,7 +29,7 @@ export class Renderer {
           // thrust vector
           this.setStyle(4);
           this.drawVector(
-            block.thrustPosition.rotation(entity.f).sum(entity.r),
+            block.thrustPosition().rotation(entity.f).sum(entity.r),
             block.thrust().f.rotation(entity.f));
 
           // thrust position

@@ -2,7 +2,6 @@
 
 ## TODO
 
-- mass calculation for polygons
 - collision detection
 - programs:
     - velocity dampeners

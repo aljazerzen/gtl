@@ -19,7 +19,7 @@ export class Entity {
     const massPoint = this.massPoint();
     const correction = this.r.difference(massPoint.r).rotate(-this.f);
 
-    this.blocks.forEach(block => block.offset.add(correction));
+    this.blocks.forEach(block => block.offset = block.offset.sum(correction));
     this.r = massPoint.r;
   }
 

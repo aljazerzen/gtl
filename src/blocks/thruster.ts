@@ -1,4 +1,3 @@
-import { MassPoint } from '../math/mass-point';
 import { Vector } from '../math/vector';
 import { ForcePoint } from '../math/force-point';
 import { Block } from './block';
@@ -11,6 +10,8 @@ export class Thruster extends Block {
 
   constructor(r: Vector, width: number, d: number) {
     super(r);
+    Block.TYPE.THRUSTER = Thruster;
+
     const f = Math.PI / 2 * d;
     this.points = [
       new Vector(),
@@ -23,20 +24,10 @@ export class Thruster extends Block {
       new Vector(0, width),
     ].map(v => v.rotation(f));
 
-    this.mass = this.points[1].length * this.points[1].length * 1.5;
-
     this.thrustVector = new Vector(0, -width * width * 0.1).rotation(f);
-
-    Block.TYPE.THRUSTER = Thruster;
   }
 
-  mass: number;
-
-  get massPoint(): MassPoint {
-    return new MassPoint(this.offset.sum(this.points[2].product(0.5)), this.mass);
-  }
-
-  get thrustPosition(): Vector {
+  thrustPosition(): Vector {
     return this.offset.sum(this.points[2].product(0.5)).sum(this.points[7].product(0.2));
   }
 
@@ -44,14 +35,14 @@ export class Thruster extends Block {
 
   thrust(): ForcePoint {
     let f = this.thrustVector.product(this.throttle);
-    let r = this.thrustPosition;
+    let r = this.thrustPosition();
 
     return new ForcePoint(Math.sin(r.angleDirection(f)) * r.length * f.length, f);
   };
 
   thrustUnthrottled(): ForcePoint {
     let f = this.thrustVector;
-    let r = this.thrustPosition;
+    let r = this.thrustPosition();
     return new ForcePoint(Math.sin(r.angleDirection(f)) * r.length * f.length, f.clone());
   };
 

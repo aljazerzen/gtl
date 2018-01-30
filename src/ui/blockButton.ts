@@ -58,6 +58,10 @@ export class BlockButton extends Button implements DragElement {
     }
   };
 
+  wheel(delta: number): void {
+    this.ghost.scale(1 + delta * 0.05);
+  }
+
   draw(renderer: Renderer) {
     super.draw(renderer);
 
