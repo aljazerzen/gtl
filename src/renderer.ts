@@ -1,9 +1,7 @@
-import { Circle } from './blocks/circle';
 import { Block } from './blocks/block';
 import { World } from './world';
 import { Vector } from './math/vector';
 import { Thruster } from './blocks/thruster';
-import { Polygon } from './blocks/polygon';
 import { Hud } from './ui/hud';
 
 export class Renderer {
@@ -73,11 +71,7 @@ export class Renderer {
 
   drawBlock(block: Block, entityPosition: Vector = new Vector, f: number = 0) {
     this.setStyle(block.color);
-    if (block instanceof Circle) {
-      this.drawCircle(entityPosition.sum(block.offset.rotation(f)), block.r);
-    } else if (block instanceof Polygon) {
-      this.drawPolygon(entityPosition.sum(block.offset.rotation(f)), block.points, f);
-    }
+    this.drawPolygon(entityPosition.sum(block.offset.rotation(f)), block.points, f);
   }
 
   drawCircle(s: Vector, r: number) {

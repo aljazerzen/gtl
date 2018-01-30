@@ -6,7 +6,6 @@ import { Renderer } from '../renderer';
 import { Thruster } from '../blocks/thruster';
 import { Slider } from './slider';
 import { BlockButton } from './blockButton';
-import { BlockId } from '../blocks/blockId';
 import { Block } from '../blocks/block';
 
 export class Hud {
@@ -29,8 +28,8 @@ export class Hud {
     controls.controlling.blocks.forEach((t) => this.addThrusterSlider(t));
 
     const y = document.body.clientHeight - 60;
-    this.elements.push(...BlockId.BLOCKS
-      .map((b: BlockId, i: number) => new BlockButton(new Vector(10 + i * 60, y), this, b))
+    this.elements.push(...Object.keys(Block.TYPE)
+      .map((b, i) => new BlockButton(new Vector(10 + i * 60, y), this, Block.TYPE[b]))
     );
 
     controls.onclickListeners.push(c => this.click(c, controls));
@@ -40,7 +39,7 @@ export class Hud {
   thrusterSliderCount = 0;
 
   addThrusterSlider(t: Block) {
-    if(t instanceof Thruster) {
+    if (t instanceof Thruster) {
       this.elements.push(new Slider(
         new Vector(30 + this.thrusterSliderCount++ * 20, 10),
         this,

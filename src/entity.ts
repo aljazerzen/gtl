@@ -1,5 +1,4 @@
 import { Block } from './blocks/block';
-import { Circle } from './blocks/circle';
 import { Rectangle } from './blocks/rectangle';
 import { Vector } from './math/vector';
 import { MassPoint } from './math/mass-point';
@@ -58,14 +57,14 @@ export class Entity {
   static createMock(x: number, y: number): Entity {
     let r = new Entity();
     r.r = new Vector(x, y);
-    r.addBlocks([new Rectangle(new Vector(-5, 50), new Vector(10, 5)), new Circle(new Vector(0, -50), 10)]);
+    r.addBlocks([new Rectangle(new Vector(-5, 50), new Vector(10, 5))]);
     return r;
   }
 
   static createMockThruster(x: number, y: number): Entity {
     let r = new Entity();
     r.r = new Vector(x, y);
-    r.addBlocks([new Thruster(new Vector(80, 0), 40, 0), new Circle(new Vector(60, 0), 60), new Thruster(new Vector(-80, 0), 40, 0.5), new Circle(new Vector(-60, 0), 60)]);
+    r.addBlocks([new Thruster(new Vector(80, 0), 40, 0), new Thruster(new Vector(-80, 0), 40, 0.5)]);
     return r;
   }
 

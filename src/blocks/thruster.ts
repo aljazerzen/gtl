@@ -1,9 +1,9 @@
 import { MassPoint } from '../math/mass-point';
 import { Vector } from '../math/vector';
-import { Polygon } from './polygon';
 import { ForcePoint } from '../math/force-point';
+import { Block } from './block';
 
-export class Thruster extends Polygon {
+export class Thruster extends Block {
 
   throttle: number = 0;
 
@@ -26,6 +26,8 @@ export class Thruster extends Polygon {
     this.mass = this.points[1].length * this.points[1].length * 1.5;
 
     this.thrustVector = new Vector(0, -width * width * 0.1).rotation(f);
+
+    Block.TYPE.THRUSTER = Thruster;
   }
 
   mass: number;

@@ -1,8 +1,8 @@
 import { MassPoint } from '../math/mass-point';
 import { Vector } from '../math/vector';
-import { Polygon } from './polygon';
+import { Block } from './block';
 
-export class Rectangle extends Polygon {
+export class Rectangle extends Block {
 
   private _points: Vector[];
 
@@ -13,6 +13,8 @@ export class Rectangle extends Polygon {
   constructor(r: Vector, size: Vector) {
     super(r);
     this._points = [new Vector(), size.horizontal(), size.clone(), size.vertical()];
+
+    Block.TYPE.RECTANGLE = Rectangle;
   }
 
   get mass(): number {

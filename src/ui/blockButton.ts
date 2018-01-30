@@ -2,8 +2,6 @@ import { Button } from './button';
 import { Controls, DragElement } from './controls';
 import { Vector } from '../math/vector';
 import { Renderer } from '../renderer';
-import { BlockId } from '../blocks/blockId';
-import { Circle } from '../blocks/circle';
 import { Rectangle } from '../blocks/rectangle';
 import { Block } from '../blocks/block';
 import { Thruster } from '../blocks/thruster';
@@ -14,19 +12,16 @@ export class BlockButton extends Button implements DragElement {
   block: Block;
   ghost: Block;
 
-  constructor(r: Vector, context: Hud, public blockId: BlockId) {
+  constructor(r: Vector, context: Hud, public blockType: any) {
     super(r, context, new Vector(50, 50));
-    this.block = this.constructBlock(blockId);
+    this.block = this.constructBlock(blockType);
   }
 
-  constructBlock(blockId: BlockId) {
-    if (blockId.block === Circle) {
-      return new Circle(this.size.product(0.5), this.size.length / 4);
-    }
-    if (blockId.block === Rectangle) {
+  constructBlock(blockType: any) {
+    if (blockType === Rectangle) {
       return new Rectangle(this.size.product(0.15), this.size.product(0.7));
     }
-    if (blockId.block === Thruster) {
+    if (blockType === Thruster) {
       return new Thruster(
         this.size.product(0.1).sum(this.size.horizontal().product(0.18)),
         this.size.horizontal().length * 0.44,
@@ -36,7 +31,7 @@ export class BlockButton extends Button implements DragElement {
   }
 
   clickRelative(c: Vector, controls: Controls): DragElement {
-    this.ghost = this.constructBlock(this.blockId);
+    this.ghost = this.constructBlock(this.blockType);
     this.move(c.sum(this.r));
     return this;
   }
