@@ -61,17 +61,12 @@ export class StepperEngine extends Engine {
       // const fiBefore = dy == 0 ? 0 : Math.tan(dy / dx);
 
       // collision detection
-      let poly1 = entity.blocks[0].polygon.clone();
-      poly1.rotate(entity.f);
-      poly1.offset(entity.r.sum(entity.blocks[0].offset.rotation(entity.f)));
+      let poly1 = entity.absolutePolygon();
 
-      // debugger;
       for (const collidedEntity of this.world.entities) {
         if(entity !== collidedEntity) {
 
-          let poly2 = collidedEntity.blocks[0].polygon.clone();
-          poly2.rotate(collidedEntity.f);
-          poly2.offset(collidedEntity.r.sum(collidedEntity.blocks[0].offset.rotation(collidedEntity.f)));
+          let poly2 = collidedEntity.absolutePolygon();
 
           const { intersections, distance } = poly2.interceptPolygon(poly1, entity.v);
           if(distance) {

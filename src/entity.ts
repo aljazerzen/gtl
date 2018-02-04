@@ -4,6 +4,7 @@ import { Vector } from './math/vector';
 import { MassPoint } from './math/mass-point';
 import { Thruster } from './blocks/thruster';
 import { ForcePoint } from './math/force-point';
+import { MultiPolygon } from './math/multi-polygon';
 
 export class Entity {
   r: Vector = new Vector();
@@ -54,10 +55,32 @@ export class Entity {
     return new ForcePoint(relative.torque, relative.f.rotation(this.f));
   }
 
+  polygon() {
+    return new MultiPolygon(
+      this.blocks.map(b => {
+        let p = b.polygon.clone();
+        p.offset(b.offset);
+        return p;
+      })
+    );
+  }
+
+  absolutePolygon() {
+    let mp = this.polygon();
+    mp.clone();
+    mp.rotate(this.f);
+    mp.offset(this.r);
+    return mp;
+  }
+
   static createMock(x: number, y: number): Entity {
     let r = new Entity();
     r.r = new Vector(x, y);
-    r.addBlocks([new Rectangle(new Vector(-5, 50), new Vector(50, 100))]);
+    r.addBlocks([
+      new Rectangle(new Vector(-5, 50), new Vector(50, 100)),
+      new Rectangle(new Vector(200, 450), new Vector(100, 100)),
+      new Rectangle(new Vector(542, 124), new Vector(200, 140)),
+    ]);
     return r;
   }
 

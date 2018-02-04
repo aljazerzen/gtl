@@ -2,7 +2,8 @@
 
 ## TODO
 
-- collision detection
+- rotary collision detection
+- combined collision detection?
 - programs:
     - velocity dampeners
     - reverse velocity orientator

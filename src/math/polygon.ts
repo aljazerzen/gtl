@@ -9,6 +9,94 @@ export class Polygon {
     this.makeEdges();
   }
 
+  static fromRaw(data: number[][]): Polygon {
+    return new Polygon(data.map(point => new Vector(point[0], point[1])));
+  }
+
+  static union(polyA: Polygon, polyB: Polygon) {
+    // Greiner–Hormann clipping algorithm
+    // http://www.inf.usi.ch/hormann/papers/Greiner.1998.ECO.pdf
+
+    let a = new PolygonLinked(polyA);
+    let b = new PolygonLinked(polyB);
+
+    let intersectionFound = false;
+
+    for (let posA = a.firstNode, start = true; posA != a.firstNode || start; posA = posA.next, start = false) {
+
+      if (!posA.intersection) {
+        let edgeA = new Line(posA.r, posA.nextNonIntersection().r);
+
+        // for (let polyStart = b.firstNode; polyStart != null; polyStart = polyStart.nextPoly) {
+        for (let posB = b.firstNode, start = true; posB != b.firstNode || start; posB = posB.next, start = false) {
+
+          if (!posB.intersection) {
+
+            let intersection = new Line(posB.r, posB.nextNonIntersection().r).intersection(edgeA);
+            if (intersection) {
+
+              intersectionFound = true;
+
+              const newNodeA = new PolygonLinkedNode(intersection);
+              newNodeA.intersection = true;
+              newNodeA.alpha = posA.r.difference(intersection).length / posA.r.difference(posA.next.r).length;
+
+              const newNodeB = new PolygonLinkedNode(intersection);
+              newNodeB.intersection = true;
+              newNodeB.alpha = posA.r.difference(intersection).length / posA.r.difference(posA.next.r).length;
+
+              newNodeA.neighbour = newNodeB;
+              newNodeB.neighbour = newNodeA;
+
+              a.insert(newNodeA, posA);
+              b.insert(newNodeB, posB);
+            }
+          }
+        }
+      }
+    }
+
+    if (!intersectionFound) {
+      if (polyB.containsPoint(a.firstNode.r))
+        return [polyB];
+      else if (polyA.containsPoint(b.firstNode.r))
+        return [polyA];
+      else
+        return [polyA, polyB];
+    }
+
+    let inside = polyB.containsPoint(a.firstNode.r);
+    for (let posA = a.firstNode, start = true; posA != a.firstNode || start; posA = posA.next, start = false) {
+      if (posA.intersection) {
+        posA.entry = !inside;
+        inside = !inside;
+      }
+    }
+
+    inside = polyA.containsPoint(b.firstNode.r);
+    for (let posB = a.firstNode, start = true; posB != a.firstNode || start; posB = posB.next, start = false) {
+      if (posB.intersection) {
+        posB.entry = !inside;
+        inside = !inside;
+      }
+    }
+
+    let points: Vector[] = [];
+    let initialIntersection = a.firstNode;
+    while (!initialIntersection.intersection) initialIntersection = initialIntersection.next;
+
+    for (let node = initialIntersection, s = true; node !== initialIntersection || s; s = false) {
+      let direction = node.entry;
+      for (s = true; !node.intersection || s; s = false) {
+        points.push(node.r);
+        node = direction ? node.next : node.prev;
+      }
+      node = node.neighbour;
+    }
+
+    return [new Polygon(points)];
+  }
+
   makeEdges() {
     this.edges = [];
 
@@ -138,6 +226,59 @@ export class Polygon {
 
   clone() {
     return new Polygon(this.points.map(p => p.clone()));
+  }
+}
+
+class PolygonLinked {
+
+  firstNode: PolygonLinkedNode;
+
+  constructor(polygon: Polygon) {
+    let prev = null;
+    for (let point of polygon.points) {
+      let node = new PolygonLinkedNode(point);
+      node.prev = prev;
+      if (node.prev)
+        node.prev.next = node;
+      else
+        this.firstNode = node;
+      prev = node;
+    }
+    prev.next = this.firstNode;
+    this.firstNode.prev = prev;
+  }
+
+  insert(node: PolygonLinkedNode, position: PolygonLinkedNode) {
+    while (position.intersection && position.alpha > node.alpha) {
+      position = position.prev;
+    }
+    while (position.next.intersection && position.next.alpha < node.alpha) {
+      position = position.next;
+    }
+    node.next = position.next;
+    node.prev = position;
+    position.next = node;
+    node.next.prev = node;
+  }
+
+}
+
+class PolygonLinkedNode {
+  r: Vector;
+  next: PolygonLinkedNode;
+  prev: PolygonLinkedNode;
+
+  intersection = false;
+  entry: boolean;
+  neighbour: PolygonLinkedNode;
+  alpha: number;
+
+  constructor(r: Vector) {
+    this.r = r;
+  }
+
+  nextNonIntersection() {
+    return this.next.intersection ? this.next.nextNonIntersection() : this.next;
   }
 }
 
