@@ -57,14 +57,14 @@ export class Entity {
   static createMock(x: number, y: number): Entity {
     let r = new Entity();
     r.r = new Vector(x, y);
-    r.addBlocks([new Rectangle(new Vector(-5, 50), new Vector(10, 5))]);
+    r.addBlocks([new Rectangle(new Vector(-5, 50), new Vector(50, 100))]);
     return r;
   }
 
   static createMockThruster(x: number, y: number): Entity {
     let r = new Entity();
     r.r = new Vector(x, y);
-    r.addBlocks([new Thruster(new Vector(80, 0), 40, 0), new Thruster(new Vector(-80, 0), 40, 0.5)]);
+    r.addBlocks([new Thruster(new Vector(80, 0), 40, 0)]);
     return r;
   }
 

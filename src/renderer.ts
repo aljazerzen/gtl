@@ -3,6 +3,7 @@ import { World } from './world';
 import { Vector } from './math/vector';
 import { Thruster } from './blocks/thruster';
 import { Hud } from './ui/hud';
+import { Polygon } from './math/polygon';
 
 export class Renderer {
 
@@ -11,7 +12,7 @@ export class Renderer {
   constructor(private ctx: CanvasRenderingContext2D) {
   }
 
-  private clear() {
+  public clear() {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     this.ctx.lineWidth = 1;
   }
@@ -71,7 +72,7 @@ export class Renderer {
 
   drawBlock(block: Block, entityPosition: Vector = new Vector, f: number = 0) {
     this.setStyle(block.color);
-    this.drawPolygon(entityPosition.sum(block.offset.rotation(f)), block.points, f);
+    this.drawPolygon(entityPosition.sum(block.offset.rotation(f)), block.polygon, f);
   }
 
   drawCircle(s: Vector, r: number) {
@@ -82,12 +83,12 @@ export class Renderer {
 
   /**
    * @param r local vector for first point of the polygon
-   * @param points
+   * @param polygon
    * @param f angle of rotation around first point
    */
-  drawPolygon(r: Vector, points: Vector[], f: number) {
+  drawPolygon(r: Vector, polygon: Polygon, f: number) {
     this.ctx.beginPath();
-    points.map(point => this.lineTo(point.rotation(f).add(r)));
+    polygon.points.map(point => this.lineTo(point.rotation(f).add(r)));
     this.ctx.fill();
   }
 

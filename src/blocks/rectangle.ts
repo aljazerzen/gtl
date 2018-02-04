@@ -1,5 +1,6 @@
 import { Vector } from '../math/vector';
 import { Block } from './block';
+import { Polygon } from '../math/polygon';
 
 export class Rectangle extends Block {
 
@@ -7,6 +8,6 @@ export class Rectangle extends Block {
     super(r);
     Block.TYPE.RECTANGLE = Rectangle;
 
-    this.points = [new Vector(), size.horizontal(), size.clone(), size.vertical()];
+    this.polygon = new Polygon([new Vector(), size.horizontal(), size.clone(), size.vertical()]);
   }
 }

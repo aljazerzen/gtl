@@ -1,6 +1,7 @@
 import { Vector } from '../math/vector';
 import { MassPoint } from '../math/mass-point';
 import { ForcePoint } from '../math/force-point';
+import { Polygon } from '../math/polygon';
 
 export abstract class Block {
 
@@ -12,12 +13,11 @@ export abstract class Block {
     this._offset = r.clone();
   }
 
-  area: number;
   mass: number;
   massPoint: MassPoint;
 
   private _offset: Vector;
-  private _points: Vector[];
+  private _polygon: Polygon;
 
   set offset(offset: Vector) {
     this.massPoint.r.subtract(this._offset);
@@ -29,34 +29,20 @@ export abstract class Block {
     return this._offset;
   }
 
-  set points(points: Vector[]) {
-    this._points = points;
-    this.pointsUpdated();
+  set polygon(points: Polygon) {
+    this._polygon = points;
+    this.polygonUpdated();
   }
 
-  get points() {
-    return this._points;
+  get polygon() {
+    return this._polygon;
   }
 
-  pointsUpdated() {
+  polygonUpdated() {
+    const { area, centroid } = this.polygon.areaAndCentroid();
 
-    // recalculate block area, mass and mass point
-    const p = this.points;
-
-    let sumArea = 0, sumX = 0, sumY = 0;
-    for (let i = 0; i < p.length - 1; i++) {
-      sumArea += p[i].x * p[i + 1].y - p[i + 1].x * p[i].y;
-      sumX += (p[i].x + p[i + 1].x) * (p[i].x * p[i + 1].y - p[i + 1].x * p[i].y);
-      sumY += (p[i].y + p[i + 1].y) * (p[i].x * p[i + 1].y - p[i + 1].x * p[i].y);
-    }
-
-    this.area = Math.abs(sumArea / 2);
-    this.mass = this.area;
-    this.massPoint = new MassPoint(
-      this.offset.sum(new Vector(sumX / this.area / 6, sumY / this.area / 6)),
-      this.mass,
-    );
-
+    this.mass = area;
+    this.massPoint = new MassPoint(this.offset.sum(centroid), this.mass);
   }
 
   thrust(): ForcePoint {
@@ -68,12 +54,12 @@ export abstract class Block {
   };
 
   rotate(t: number): void {
-    this.points.forEach(point => point.rotate(t));
-    this.pointsUpdated();
+    this.polygon.rotate(t);
+    this.polygonUpdated();
   }
 
   scale(k: number): void {
-    this.points.forEach(point => point.multiply(k));
-    this.pointsUpdated();
+    this.polygon.scale(k);
+    this.polygonUpdated();
   }
 }

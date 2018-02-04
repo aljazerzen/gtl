@@ -2,15 +2,16 @@ import { Engine } from './engine';
 import { Vector } from '../math/vector';
 import { Controls } from '../ui/controls';
 import { Thruster } from '../blocks/thruster';
+import { Renderer } from '../renderer';
 
 export class StepperEngine extends Engine {
 
-  tick(controls: Controls = new Controls) {
+  tick(controls: Controls = new Controls, renderer?: Renderer) {
 
     const G = 100;
     const c = this.world.center;
 
-    this.world.entities.forEach(entity => {
+    for (const entity of this.world.entities) {
 
       let massPoint = entity.massPoint();
 
@@ -28,7 +29,7 @@ export class StepperEngine extends Engine {
       dv.add(thrust.f.product(1 / massPoint.mass));
       dfv += thrust.torque / entity.inertia || 0;
 
-      if(controls.controlling == entity) {
+      if (controls.controlling == entity) {
         if (controls.up) {
           entity.blocks.forEach(block => {
             if (block instanceof Thruster) {
@@ -59,6 +60,27 @@ export class StepperEngine extends Engine {
 
       // const fiBefore = dy == 0 ? 0 : Math.tan(dy / dx);
 
+      // collision detection
+      let poly1 = entity.blocks[0].polygon.clone();
+      poly1.rotate(entity.f);
+      poly1.offset(entity.r.sum(entity.blocks[0].offset.rotation(entity.f)));
+
+      // debugger;
+      for (const collidedEntity of this.world.entities) {
+        if(entity !== collidedEntity) {
+
+          let poly2 = collidedEntity.blocks[0].polygon.clone();
+          poly2.rotate(collidedEntity.f);
+          poly2.offset(collidedEntity.r.sum(collidedEntity.blocks[0].offset.rotation(collidedEntity.f)));
+
+          const { intersections, distance } = poly2.interceptPolygon(poly1, entity.v);
+          if(distance) {
+            entity.v.multiply(0);
+          }
+
+        }
+      }
+
       entity.r.add(entity.v);
       entity.f += entity.vf;
 
@@ -67,7 +89,7 @@ export class StepperEngine extends Engine {
       // const dy2 = c.y - massPoint2.y;
       // const fiAfter = dy2 == 0 ? 0 : Math.tan(dy2 / dx2);
 
-    });
+    }
 
   }
 

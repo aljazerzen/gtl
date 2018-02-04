@@ -1,6 +1,7 @@
 import { Vector } from '../math/vector';
 import { ForcePoint } from '../math/force-point';
 import { Block } from './block';
+import { Polygon } from '../math/polygon';
 
 export class Thruster extends Block {
 
@@ -13,7 +14,7 @@ export class Thruster extends Block {
     Block.TYPE.THRUSTER = Thruster;
 
     const f = Math.PI / 2 * d;
-    this.points = [
+    this.polygon = new Polygon([
       new Vector(),
       new Vector(width, 0),
       new Vector(width, width),
@@ -22,13 +23,13 @@ export class Thruster extends Block {
       new Vector(0, 1.6 * width),
       new Vector(0.2 * width, width),
       new Vector(0, width),
-    ].map(v => v.rotation(f));
+    ].map(v => v.rotation(f)));
 
     this.thrustVector = new Vector(0, -width * width * 0.1).rotation(f);
   }
 
   thrustPosition(): Vector {
-    return this.offset.sum(this.points[2].product(0.5)).sum(this.points[7].product(0.2));
+    return this.offset.sum(this.polygon.points[2].product(0.5)).sum(this.polygon.points[7].product(0.2));
   }
 
   thrustVector: Vector;
