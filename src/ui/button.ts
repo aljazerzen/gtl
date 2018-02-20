@@ -1,6 +1,6 @@
 import { UIElementRectangle } from './UIElementRectangle';
 import { Vector } from '../math/vector';
-import { Controls, DragElement } from './controls';
+import { DragElement, EventHandler } from './event-handler';
 import { Hud } from './hud';
 
 export class Button extends UIElementRectangle {
@@ -9,7 +9,7 @@ export class Button extends UIElementRectangle {
     super(r, context, size);
   }
 
-  clickRelative(c: Vector, controls: Controls): DragElement {
+  clickRelative(c: Vector, controls: EventHandler): DragElement {
     if(this.onclick)
       this.onclick(this);
     return this;

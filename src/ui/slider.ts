@@ -1,7 +1,7 @@
 import { UIElementRectangle } from './UIElementRectangle';
 import { Vector } from '../math/vector';
 import { Renderer } from '../renderer';
-import { DragElement } from './controls';
+import { DragElement } from './event-handler';
 import { Hud } from './hud';
 
 export class Slider extends UIElementRectangle implements DragElement {

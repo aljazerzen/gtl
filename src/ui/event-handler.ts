@@ -1,22 +1,26 @@
-import { Entity } from '../entity';
 import { Vector } from '../math/vector';
+import { EntityController, GyroControl, ThrustControl } from './entity-controller';
 
-export class Controls {
+export interface DragElement {
 
-  up = false;
-  down = false;
-  left = false;
-  right = false;
+  // return true to continue drag
+  move(c: Vector, controls: EventHandler): boolean | void;
+
+  // return true to continue drag
+  end(c: Vector, controls: EventHandler): boolean | void;
+
+  wheel(delta: number): void;
+}
+
+export class EventHandler {
+
   rotatePlacingRight = false;
   rotatePlacingLeft = false;
-  rotationDampeners = false;
-
-  controlling: Entity;
 
   onclickListeners: ((c: Vector) => DragElement)[] = [];
   currentDragElement: DragElement;
 
-  constructor() {
+  constructor(public ec?: EntityController) {
   }
 
   setListeners() {
@@ -28,32 +32,45 @@ export class Controls {
     window.document.onwheel = (event) => this.wheel(event);
   }
 
-  static toggles: any = {
-    'p': 'rotationDampeners',
-  };
+  keyboardEvent(event: KeyboardEvent, pressed: boolean) {
 
-  static bindings: any = {
-    'ArrowDown': 'down',
-    'ArrowUp': 'up',
-    'ArrowLeft': 'left',
-    'ArrowRight': 'right',
-    'e': 'rotatePlacingLeft',
-    'q': 'rotatePlacingRight',
-  };
-
-  keyboardEvent(event: KeyboardEvent, down: boolean) {
-    const taa = this as any;
-    const toggle = Controls.toggles[event.key];
-    if (toggle && down) {
-      taa[toggle] = !taa[toggle];
+    switch (event.key) {
+      case 'e':
+        this.rotatePlacingLeft = pressed;
+        break;
+      case 'q':
+        this.rotatePlacingRight = pressed;
+        break;
     }
 
-    const binding = Controls.bindings[event.key];
-    if (binding) {
-      taa[binding] = down;
+    if (!this.ec)
+      return;
+
+    switch (event.key) {
+      case 'ArrowDown':
+        this.ec.thrustControl = pressed ? ThrustControl.DECREASE : ThrustControl.NONE;
+        break;
+      case 'ArrowUp':
+        this.ec.thrustControl = pressed ? ThrustControl.INCREASE : ThrustControl.NONE;
+        break;
+      case 'ArrowLeft':
+        this.ec.gyroControl = pressed ? GyroControl.POSITIVE : GyroControl.NONE;
+        break;
+      case 'ArrowRight':
+        this.ec.gyroControl = pressed ? GyroControl.NEGATIVE : GyroControl.NONE;
+        break;
+      case 'p':
+        if (pressed)
+          this.ec.rotationDampener = !this.ec.rotationDampener;
+        break;
+      case 'o':
+        if (pressed)
+          this.ec.inertiaEqualizer = !this.ec.inertiaEqualizer;
+        break;
+      default:
+        console.log(event.key);
     }
-    if (!toggle && !binding)
-      console.log(event.key);
+
   }
 
   onmousedown(event: MouseEvent) {
@@ -93,15 +110,4 @@ export class Controls {
       this.currentDragElement.wheel(event.deltaY / 100);
   }
 
-}
-
-export interface DragElement {
-
-  // return true to continue drag
-  move(c: Vector, controls: Controls): boolean | void;
-
-  // return true to continue drag
-  end(c: Vector, controls: Controls): boolean | void;
-
-  wheel(delta: number): void;
 }

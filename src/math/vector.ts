@@ -3,6 +3,10 @@ export class Vector {
   constructor(public x: number = 0, public y: number = 0) {
   }
 
+  get length() {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
+
   clone() {
     return new Vector(this.x, this.y);
   }
@@ -68,10 +72,6 @@ export class Vector {
       new Vector(Math.cos(t), Math.sin(t)),
       new Vector(-Math.sin(t), Math.cos(t)),
     ]);
-  }
-
-  get length() {
-    return Math.sqrt(this.x * this.x + this.y * this.y);
   }
 
   angle(a: Vector) {

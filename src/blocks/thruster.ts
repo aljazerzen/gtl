@@ -1,17 +1,16 @@
 import { Vector } from '../math/vector';
 import { ForcePoint } from '../math/force-point';
-import { Block } from './block';
+import { Block, RegisterBlock } from './block';
 import { Polygon } from '../math/polygon';
 
+@RegisterBlock('thruster')
 export class Thruster extends Block {
 
   throttle: number = 0;
-
-  points: Vector[];
+  throttleTarget: number = 0;
 
   constructor(r: Vector, width: number, d: number) {
     super(r);
-    Block.TYPE.THRUSTER = Thruster;
 
     const f = Math.PI / 2 * d;
     this.polygon = new Polygon([
@@ -50,5 +49,15 @@ export class Thruster extends Block {
   rotate(t: number) {
     super.rotate(t);
     this.thrustVector.rotate(t);
+  }
+
+  tick() {
+    this.throttle = this.throttle + Math.min(this.throttleTarget - this.throttle, 0.01);
+  }
+
+  // Should be called only once per tick
+  controlThrottle(throttle: number) {
+    if (!isNaN(throttle) && this.throttle !== null)
+      this.throttleTarget = Math.max(Math.min(throttle, 1), 0);
   }
 }

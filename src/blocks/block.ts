@@ -1,7 +1,12 @@
 import { Vector } from '../math/vector';
 import { MassPoint } from '../math/mass-point';
-import { ForcePoint } from '../math/force-point';
 import { Polygon } from '../math/polygon';
+
+export function RegisterBlock(name: string) {
+  return function (constructor: Function) {
+    Block.TYPE[name] = constructor;
+  };
+}
 
 export abstract class Block {
 
@@ -41,17 +46,12 @@ export abstract class Block {
   polygonUpdated() {
     const { area, centroid } = this.polygon.areaAndCentroid();
 
-    this.mass = area;
+    this.mass = Math.abs(area);
     this.massPoint = new MassPoint(this.offset.sum(centroid), this.mass);
   }
 
-  thrust(): ForcePoint {
-    return null;
-  };
-
-  thrustUnthrottled(): ForcePoint {
-    return null;
-  };
+  tick() {
+  }
 
   rotate(t: number): void {
     this.polygon.rotate(t);

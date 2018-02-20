@@ -1,7 +1,7 @@
 import { UIElement } from './UIElement';
 import { Vector } from '../math/vector';
 import { Renderer } from '../renderer';
-import { Controls, DragElement } from './controls';
+import { DragElement, EventHandler } from './event-handler';
 import { Hud } from './hud';
 
 export abstract class UIElementRectangle extends UIElement {
@@ -10,7 +10,7 @@ export abstract class UIElementRectangle extends UIElement {
     super(r, context);
   }
 
-  click(c: Vector, controls: Controls): DragElement {
+  click(c: Vector, controls: EventHandler): DragElement {
     if (this.isOver(c)) {
       return this.clickRelative(c.difference(this.r), controls);
     }
@@ -21,7 +21,7 @@ export abstract class UIElementRectangle extends UIElement {
     return c.x >= this.r.x && c.x < o.x && c.y >= this.r.y && c.y < o.y;
   }
 
-  abstract clickRelative(c: Vector, controls: Controls): DragElement;
+  abstract clickRelative(c: Vector, controls: EventHandler): DragElement;
 
   draw(renderer: Renderer): void {
     renderer.setStyle(1);

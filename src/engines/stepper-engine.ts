@@ -1,18 +1,17 @@
 import { Engine } from './engine';
 import { Vector } from '../math/vector';
-import { Controls } from '../ui/controls';
-import { Thruster } from '../blocks/thruster';
 import { Renderer } from '../renderer';
 
 export class StepperEngine extends Engine {
 
-  tick(controls: Controls = new Controls, renderer?: Renderer) {
+  tick(renderer?: Renderer) {
 
     const G = 100;
     const c = this.world.center;
 
     for (const entity of this.world.entities) {
 
+      entity.tick();
       let massPoint = entity.massPoint();
 
       const dv = new Vector();
@@ -25,35 +24,9 @@ export class StepperEngine extends Engine {
       dv.add(distance.product(a / distance.length));
 
       // Thrust
-      const thrust = entity.thrust();
+      const thrust = entity.force();
       dv.add(thrust.f.product(1 / massPoint.mass));
       dfv += thrust.torque / entity.inertia || 0;
-
-      if (controls.controlling == entity) {
-        if (controls.up) {
-          entity.blocks.forEach(block => {
-            if (block instanceof Thruster) {
-              block.throttle = Math.min(1, block.throttle + 0.01);
-            }
-          });
-        }
-        if (controls.down) {
-          entity.blocks.forEach(block => {
-            if (block instanceof Thruster) {
-              block.throttle = Math.max(0, block.throttle - 0.01);
-            }
-          });
-        }
-        if (controls.left) {
-          dfv -= 0.0005;
-        }
-        if (controls.right) {
-          dfv += 0.0005;
-        }
-        if (!controls.left && !controls.right && controls.rotationDampeners) {
-          dfv -= Math.min(Math.abs(entity.vf), 0.0005) * (entity.vf > 0 ? 1 : -1);
-        }
-      }
 
       entity.v.add(dv);
       entity.vf += dfv;

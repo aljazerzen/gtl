@@ -1,6 +1,6 @@
 import { Vector } from '../math/vector';
 import { Renderer } from '../renderer';
-import { Controls, DragElement } from './controls';
+import { DragElement, EventHandler } from './event-handler';
 import { Hud } from './hud';
 
 export abstract class UIElement implements DragElement {
@@ -9,17 +9,17 @@ export abstract class UIElement implements DragElement {
 
   }
 
-  abstract click(c: Vector, controls: Controls): DragElement;
+  abstract click(c: Vector, controls: EventHandler): DragElement;
 
   abstract draw(renderer: Renderer): void;
 
-  tick(controls: Controls) {
+  tick(controls: EventHandler) {
   }
 
-  move(c: Vector, controls: Controls): boolean | void {
+  move(c: Vector, controls: EventHandler): boolean | void {
   }
 
-  end(c: Vector, controls: Controls): boolean | void {
+  end(c: Vector, controls: EventHandler): boolean | void {
   }
 
   wheel(delta: number): void {

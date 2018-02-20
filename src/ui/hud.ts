@@ -1,7 +1,7 @@
 import { UIElement } from './UIElement';
 import { ToggleButton } from './toggleButton';
 import { Vector } from '../math/vector';
-import { Controls, DragElement } from './controls';
+import { DragElement, EventHandler } from './event-handler';
 import { Renderer } from '../renderer';
 import { Thruster } from '../blocks/thruster';
 import { Slider } from './slider';
@@ -11,40 +11,45 @@ import { Block } from '../blocks/block';
 export class Hud {
 
   elements: UIElement[];
+  thrusterSliderCount = 0;
 
-  constructor(private controls: Controls) {
+  constructor(private eventHandler: EventHandler) {
 
     this.elements = [
 
       new ToggleButton(
         new Vector(10, 10),
         this,
-        () => (controls.rotationDampeners = !controls.rotationDampeners),
-        () => controls.rotationDampeners,
+        () => (eventHandler.ec.rotationDampener = !eventHandler.ec.rotationDampener),
+        () => eventHandler.ec.rotationDampener,
+      ),
+      new ToggleButton(
+        new Vector(10, 35),
+        this,
+        () => (eventHandler.ec.inertiaEqualizer = !eventHandler.ec.inertiaEqualizer),
+        () => eventHandler.ec.inertiaEqualizer,
       ),
 
     ];
 
-    controls.controlling.blocks.forEach((t) => this.addThrusterSlider(t));
+    eventHandler.ec.entity.blocks.forEach((t) => this.addThrusterSlider(t));
 
     const y = document.body.clientHeight - 60;
     this.elements.push(...Object.keys(Block.TYPE)
       .map((b, i) => new BlockButton(new Vector(10 + i * 60, y), this, Block.TYPE[b]))
     );
 
-    controls.onclickListeners.push(c => this.click(c, controls));
+    eventHandler.onclickListeners.push(c => this.click(c, eventHandler));
 
   }
-
-  thrusterSliderCount = 0;
 
   addThrusterSlider(t: Block) {
     if (t instanceof Thruster) {
       this.elements.push(new Slider(
         new Vector(30 + this.thrusterSliderCount++ * 20, 10),
         this,
-        (v: number) => t.throttle = v,
-        () => t.throttle),
+        (v: number) => t.controlThrottle(v),
+        () => t.throttleTarget),
       );
     }
   }
@@ -53,7 +58,7 @@ export class Hud {
     this.elements.forEach(element => element.draw(renderer));
   }
 
-  click(c: Vector, controls: Controls): DragElement {
+  click(c: Vector, controls: EventHandler): DragElement {
     for (let element of this.elements) {
       const dragElement = element.click(c, controls);
       if (dragElement) return dragElement;
@@ -63,7 +68,7 @@ export class Hud {
 
   tick() {
     for (let element of this.elements) {
-      element.tick(this.controls);
+      element.tick(this.eventHandler);
     }
   }
 }

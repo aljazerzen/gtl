@@ -5,6 +5,8 @@ import { MassPoint } from './math/mass-point';
 import { Thruster } from './blocks/thruster';
 import { ForcePoint } from './math/force-point';
 import { MultiPolygon } from './math/multi-polygon';
+import { EntityController } from './ui/entity-controller';
+import { Gyroscope } from './blocks/gyroscope';
 
 export class Entity {
   r: Vector = new Vector();
@@ -14,6 +16,7 @@ export class Entity {
   vf = 0;
 
   public blocks: Block[] = [];
+  controller: EntityController = new EntityController(this);
 
   addBlocks(blocks: Block[]) {
     this.blocks.push(...blocks);
@@ -35,22 +38,26 @@ export class Entity {
   }
 
   get inertia(): number {
-    return this.blocks.reduce(
-      (acc, block) => acc + block.mass * Math.max(1, Math.pow(block.massPoint.r.length, 2)), 0);
+    let sum = 0;
+    for (let block of this.blocks)
+      sum += block.mass * Math.max(1, Math.pow(block.massPoint.r.length, 2));
+    return sum;
   }
 
-  thrust(): ForcePoint {
-    let relative = new ForcePoint;
-    for (let block of this.blocks) {
-      relative.add(block.thrust());
-    }
-    return new ForcePoint(relative.torque, relative.f.rotation(this.f));
+  static createMockThruster(x: number, y: number): Entity {
+    let r = new Entity();
+    r.r = new Vector(x, y);
+    r.addBlocks([new Thruster(new Vector(80, 0), 40, 0), new Gyroscope(new Vector(100, -40), 40, 0)]);
+    return r;
   }
 
-  thrustUnthrottled(): ForcePoint {
+  force(): ForcePoint {
     let relative = new ForcePoint;
     for (let block of this.blocks) {
-      relative.add(block.thrustUnthrottled());
+      if (block instanceof Thruster)
+        relative.add(block.thrust());
+      if (block instanceof Gyroscope)
+        relative.add(block.torque());
     }
     return new ForcePoint(relative.torque, relative.f.rotation(this.f));
   }
@@ -84,11 +91,19 @@ export class Entity {
     return r;
   }
 
-  static createMockThruster(x: number, y: number): Entity {
-    let r = new Entity();
-    r.r = new Vector(x, y);
-    r.addBlocks([new Thruster(new Vector(80, 0), 40, 0)]);
-    return r;
+  thrustUnthrottled(): ForcePoint {
+    const relative = new ForcePoint;
+    for (let block of this.blocks) {
+      if (block instanceof Thruster)
+        relative.add(block.thrustUnthrottled());
+    }
+    return new ForcePoint(relative.torque, relative.f.rotation(this.f));
   }
 
+  tick() {
+    this.controller.tick();
+    for (let block of this.blocks) {
+      block.tick();
+    }
+  }
 }

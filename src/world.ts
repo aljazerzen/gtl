@@ -10,7 +10,7 @@ export class World {
   static createMock(): World {
     let r = new World();
     r.center = new MassPoint(new Vector(300, 200), 0);
-    r.entities = [Entity.createMock(100, 200), Entity.createMockThruster(200, 100)];
+    r.entities = [Entity.createMock(100, 200), Entity.createMockThruster(300, 100)];
     r.entities[0].vf = 0.00;
     r.entities[0].f = Math.PI / 6;
 

@@ -6,10 +6,8 @@ export class ForcePoint {
   }
 
   add(p: ForcePoint) {
-    if (p) {
-      this.torque += p.torque;
-      this.f.add(p.f);
-    }
+    this.torque += p.torque;
+    this.f.add(p.f);
   }
 
 }

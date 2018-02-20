@@ -46,7 +46,7 @@ export class Renderer {
         this.drawVector(entity.r, entity.v.product(100));
 
       this.setStyle(3);
-      let thrust = entity.thrust();
+      let thrust = entity.force();
       if (!thrust.f.isZero())
         this.drawVector(entity.r, thrust.f);
 
@@ -82,7 +82,7 @@ export class Renderer {
   }
 
   /**
-   * @param r local vector for first point of the polygon
+   * @param r local vector (actual coordinates of point with coordinates (0,0))
    * @param polygon
    * @param f angle of rotation around first point
    */
@@ -90,6 +90,12 @@ export class Renderer {
     this.ctx.beginPath();
     polygon.points.map(point => this.lineTo(point.rotation(f).add(r)));
     this.ctx.fill();
+  }
+
+  drawLineString(r: Vector, points: Vector[], f: number) {
+    this.ctx.beginPath();
+    points.map(point => this.lineTo(point.rotation(f).add(r)));
+    this.ctx.stroke();
   }
 
   drawRectangle(a: Vector, s: Vector, f: number) {
