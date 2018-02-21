@@ -3,38 +3,52 @@ import { Vector } from './math/vector';
 import { Matrix } from './math/matrix';
 
 let canvas = document.getElementsByTagName('canvas')[0] as HTMLCanvasElement;
-canvas.height = document.body.clientHeight - 300;
+canvas.height = document.body.clientHeight - 400;
 canvas.width = document.body.clientWidth;
 
 let inputs = Array.prototype.slice.call(document.getElementsByTagName('input')) as HTMLInputElement[];
+let inp = (index) => +inputs[index].value;
 
 let ctx = canvas.getContext('2d');
 
 let renderer = new Renderer(ctx);
 
-function go() {
-  let t = +inputs[0].value;
-  let maxT = 100;
+/**
+ * Finds an intersection between x-axis and graph of function f between lower and upper bounds
+ * Used in this.interceptAngular function
+ * @param {Vector} lower
+ * @param {Vector} upper
+ * @param {(x: number) => number} f
+ * @returns {Vector}
+ */
+const findContactBisection = function (lower: Vector, upper: Vector, f: (x: number) => number) {
+  while (upper.x - lower.x > 0.0001) {
+    let tMiddle = (upper.x + lower.x) / 2;
+    let middle = new Vector(tMiddle, f(tMiddle));
 
-  let r1 = new Vector(320, 100 + +inputs[5].value);
-  let a1 = new Vector(+inputs[1].value, +inputs[2].value);
-  let o = new Vector(-50, -50);
-  let theta = Math.PI * (+inputs[4].value);
+    if (middle.y * lower.y >= 0) lower = middle;
+    if (middle.y * upper.y >= 0) upper = middle;
+  }
 
-  let r2 = new Vector(300, 150);
-  let a2 = new Vector(-150, 0);
+  return lower.x >= 0 ? lower : null;
+};
 
-  let f = (t) => A.det() * t + a2.length * o.length * Math.sin(theta * t + g) - deltaR2.det();
+function interceptAngular(r1: Vector, a1: Vector, o: Vector, theta: number, r2: Vector, a2: Vector) {
+  // Helper matrices and values
+  const A_det = new Matrix(a1, a2).det();
+  const R2_det = new Matrix(r2.difference(r1), a2).det();
+  const g = Math.atan2(new Matrix(o, a2).det(), -o.multiplyScalar(a2));
+  const b = a2.length * o.length;
 
-  let A = new Matrix(a1, a2);
-  let deltaR2 = new Matrix(r2.difference(r1), a2);
-
-  let g = Math.atan2(new Matrix(o, a2).det(), -o.multiplyScalar(a2));
+  const f = (t) => A_det * t + b * Math.sin(theta * t + g) - R2_det;
+  const t2 = (t1) => (r1.x - r2.x + t1 * a1.x + o.rotation(t1 * theta).x) / a2.x;
+  const r = (t2) => a2.product(t2).add(r2);
 
   let contact = null;
-  if (A.det() === 0) {
+  if (A_det === 0) {
+    // Special case: f = b * sin(theta * t + g) - R2_det (no linear term)
 
-    let j = Math.asin(deltaR2.det() / o.length / a2.length);
+    const j = Math.asin(R2_det / b);
     if (!isNaN(j)) {
 
       let tContact = Math.min(
@@ -46,46 +60,35 @@ function go() {
     }
 
   } else {
-
-    let t1 = (deltaR2.det() - a2.length * o.length) / A.det();
-    let t2 = (deltaR2.det() + a2.length * o.length) / A.det();
-    [t1, t2] = [Math.min(t1, t2), Math.max(t1, t2)];
-
-    const findContactBisection = function (lower: Vector, upper: Vector) {
-      while (upper.x - lower.x > 0.0001) {
-        let tMiddle = (upper.x + lower.x) / 2;
-        let middle = new Vector(tMiddle, f(tMiddle));
-
-        if (middle.y * lower.y >= 0) lower = middle;
-        if (middle.y * upper.y >= 0) upper = middle;
-      }
-
-      return lower.x >= 0 ? lower : null;
-    };
-
-    let h = Math.acos(-A.det() / a2.length / o.length / theta);
+    const h = Math.acos(-A_det / b / theta);
 
     if (isNaN(h)) {
-      // f is monotonic (decreasing or increasing)
+      // special case: f is monotonic (decreasing or increasing) -> no extremes
 
       let start = new Vector(0, f(0));
-      let end = new Vector(maxT, f(maxT));
+      let end = new Vector(1, f(1));
 
       // are start and end on different sides of x-axis?
       if (start.y * end.y <= 0) {
-        contact = findContactBisection(start, end);
+        contact = findContactBisection(start, end, f);
       }
 
     } else {
-      let k0 = Math.floor((h + g) / 2 / Math.PI);
-      let k1 = Math.floor((theta * t1 - h + g) / 2 / Math.PI);
-      let k2 = Math.ceil((theta * t2 + h + g) / 2 / Math.PI);
+      let tL1 = (R2_det - b) / A_det;
+      let tL2 = (R2_det + b) / A_det;
 
-      let tk = (k, hPlus: boolean) => (2 * Math.PI * k + (hPlus ? h : -h) - g) / theta;
+      // sort tL1 and tL2 (cool one-liner, yeah?)
+      [tL1, tL2] = [Math.min(tL1, tL2), Math.max(tL1, tL2)];
 
-      let tk01 = tk(k0, false);
-      let tk02 = tk(k0, true);
-      let tk0 = tk02 < 0 ? tk02 : tk01;
+      const k0 = Math.floor((h + g) / 2 / Math.PI);
+      const k1 = Math.floor((theta * tL1 - h + g) / 2 / Math.PI);
+      const k2 = Math.ceil((theta * tL2 + h + g) / 2 / Math.PI);
+
+      const tk = (k, hPlus: boolean) => (2 * Math.PI * k + (hPlus ? h : -h) - g) / theta;
+
+      const tk01 = tk(k0, false);
+      const tk02 = tk(k0, true);
+      const tk0 = tk02 < 0 ? tk02 : tk01;
 
       let extremePrev = new Vector(tk0, f(tk0));
       sequentialExtremes: for (let k = k1; k <= k2; k++) {
@@ -96,9 +99,18 @@ function go() {
           // are values on different sides of x-axis (or touch it)?
           if (extremePrev.y * extremeCurr.y <= 0) {
 
-            contact = findContactBisection(extremePrev, extremeCurr);
+            contact = findContactBisection(extremePrev, extremeCurr, f);
 
-            if (contact) break sequentialExtremes;
+            if (contact) {
+
+              const t2Contact = t2(contact.x);
+              if (0 <= t2Contact && t2Contact <= 1) {
+                break sequentialExtremes;
+              } else {
+                contact = null;
+              }
+
+            }
           }
 
           extremePrev = extremeCurr;
@@ -107,34 +119,57 @@ function go() {
     }
   }
 
+  if (!contact) return null;
+
+  const t1Contact = contact.x;
+  const t2Contact = t2(t1Contact);
+  return { t1: t1Contact, t2: t2Contact, r: r(t2Contact) };
+}
+
+function go() {
+  let r1 = new Vector(320, 100 + inp(0));
+  let a1 = new Vector(inp(1), inp(2));
+  let o = new Vector(inp(3), inp(3));
+  let theta = Math.PI * (inp(4));
+
+  let r2 = new Vector(300, 150);
+  let a2 = new Vector(inp(5), inp(6));
+  let t1 = inp(7);
+
+  let contact = interceptAngular(r1, a1, o, theta, r2, a2);
+
+  let points;
   renderer.clear();
-  renderer.drawVector(r1, a1.product(t));
-  renderer.drawVector(r1.sum(a1.product(t)), o.rotation(theta * t));
-  renderer.drawVector(r2, a2.product(+inputs[3].value));
+  renderer.drawVector(r1, a1);
+  renderer.drawVector(r1.sum(a1.product(t1)), o.rotation(theta * t1));
+  renderer.drawVector(r2, a2);
 
-  renderer.drawVector(new Vector(0, 500), new Vector(10000, 0));
-  renderer.drawVector(new Vector(400, 300), new Vector(0, 10000));
-
+  /* Coordinate system */
+  let center = new Vector(400, 500);
+  renderer.drawVector(new Vector(0, center.y), new Vector(10000, 0));
+  renderer.drawVector(new Vector(center.x, 0), new Vector(0, 10000));
+  const A_det = new Matrix(a1, a2).det();
+  const R2_det = new Matrix(r2.difference(r1), a2).det();
+  const g = Math.atan2(new Matrix(o, a2).det(), -o.multiplyScalar(a2));
+  const b = a2.length * o.length;
+  const f = (t) => A_det * t + b * Math.sin(theta * t + g) - R2_det;
+  points = [];
+  for (let i = -10; i < 10; i += 0.001) {
+    points.push(new Vector(i * 100, f(i) / 100));
+  }
+  renderer.drawLineString(center, points, 0);
   let drawT = (ta, s = 7) =>
-    renderer.drawCross(new Vector(400, 500).add(new Vector(ta * 100, f(ta) / 100)), s);
+    renderer.drawCross(center.sum(new Vector(ta * 100, f(ta) / 100)), s);
 
   renderer.setStyle(2);
   if (contact) {
-    drawT(contact.x, 10);
-    renderer.drawCross(r1.sum(a1.product(contact.x)).sum(o.rotation(theta * contact.x)), 5);
+    drawT(contact.t1, 10);
+    renderer.drawCross(contact.r, 5);
   }
-
-  renderer.setStyle(3);
 
   renderer.setStyle(1);
-  renderer.drawCross(new Vector(400, 500).add(new Vector(t * 100, f(t) / 100)), 7);
-  let points = [];
-  for (let i = -5; i < 5; i += 0.001) {
-    points.push(new Vector(i * 100, f(i) / 100));
-  }
-  renderer.drawLineString(new Vector(400, 500), points, 0);
   points = [];
-  for (let i = -5; i < 5; i += 0.001) {
+  for (let i = 0; i < 1; i += 0.001) {
     points.push(a1.product(i).sum(o.rotation(theta * i)));
   }
   renderer.drawLineString(r1, points, 0);
