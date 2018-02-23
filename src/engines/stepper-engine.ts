@@ -41,9 +41,10 @@ export class StepperEngine extends Engine {
 
           let poly2 = collidedEntity.absolutePolygon();
 
-          const { intersections, distance } = poly2.interceptPolygon(poly1, entity.v);
-          if(distance) {
+          const { t } = poly2.interceptPolygonAngular(poly1, entity.v, entity.r, entity.vf);
+          if (t) {
             entity.v.multiply(0);
+            entity.vf = 0;
           }
 
         }

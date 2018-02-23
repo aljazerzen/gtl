@@ -136,6 +136,47 @@ export class Polygon {
     return true;
   }
 
+  /**
+   * Finds first interception of movement of this polygon with polygon @poly
+   * @param {Polygon} poly
+   * @param {Vector} velocity of this poly
+   * @param center of rotation
+   * @param {number} theta angular velocity of this poly
+   * @returns object describing distance covered and interceptions detected
+   */
+  interceptPolygonAngular(poly: Polygon, velocity: Vector, center: Vector, theta: number) {
+    let interceptions = [];
+    let tMin = null;
+
+    for (let point of poly.points) {
+
+      const { t1, interception } = this.interceptPointAngular(center, point.difference(center), velocity, theta);
+      if (t1) {
+        if (!tMin || t1 < tMin) {
+          tMin = t1;
+          interceptions = [interception];
+        } else if (t1 === tMin) {
+          interceptions.push(interception);
+        }
+      }
+    }
+
+    let reverseVelocity = velocity.product(-1);
+    for (let point of this.points) {
+      const { t1 } = poly.interceptPointAngular(center, point.difference(center), reverseVelocity, -theta);
+      if (t1) {
+        if (!tMin || t1 < tMin) {
+          tMin = t1;
+          interceptions = [point];
+        } else if (t1 === tMin) {
+          interceptions.push(point);
+        }
+      }
+    }
+
+    return { t: tMin, interceptions };
+  }
+
   interceptPolygon(poly: Polygon, path: Vector) {
 
     let intersections = [];
@@ -189,6 +230,31 @@ export class Polygon {
       }
     }
     return { distance: minDistance, intersection: firstIntersection };
+  }
+
+  /**
+   *
+   * @param {Vector} r1 center of rotation and local vector for our vector
+   * @param {Vector} o offset vector (vector from @r1 to actual position of the point at t = 0)
+   * @param {Vector} velocity normalized velocity
+   * @param {number} theta angular velocity
+   */
+  interceptPointAngular(r1: Vector, o: Vector, velocity: Vector, theta: number) {
+    let firstIntersection = null;
+    let t1First = null;
+
+    for (const edge of this.edges) {
+
+      const intersection = edge.interceptAngular(r1, velocity, o, theta);
+
+      if (intersection) {
+        if (!t1First || intersection.t1 < t1First) {
+          t1First = intersection.t1;
+          firstIntersection = intersection;
+        }
+      }
+    }
+    return { t1: t1First, interception: firstIntersection };
   }
 
   areaAndCentroid() {

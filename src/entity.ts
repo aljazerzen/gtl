@@ -87,6 +87,8 @@ export class Entity {
       new Rectangle(new Vector(-5, 50), new Vector(50, 100)),
       new Rectangle(new Vector(200, 450), new Vector(100, 100)),
       new Rectangle(new Vector(542, 124), new Vector(200, 140)),
+      new Rectangle(new Vector(0, 0), new Vector(50, 1000)),
+      new Rectangle(new Vector(200, 1000), new Vector(1000, 50)),
     ]);
     return r;
   }
