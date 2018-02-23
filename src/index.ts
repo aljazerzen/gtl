@@ -3,15 +3,17 @@ import { Vector } from './math/vector';
 import { Matrix } from './math/matrix';
 
 let canvas = document.getElementsByTagName('canvas')[0] as HTMLCanvasElement;
-canvas.height = document.body.clientHeight - 400;
+canvas.height = document.body.clientHeight - 300;
 canvas.width = document.body.clientWidth;
 
 let inputs = Array.prototype.slice.call(document.getElementsByTagName('input')) as HTMLInputElement[];
+let ps = Array.prototype.slice.call(document.getElementsByTagName('p')) as HTMLInputElement[];
 let inp = (index) => +inputs[index].value;
 
 let ctx = canvas.getContext('2d');
 
 let renderer = new Renderer(ctx);
+let points = [];
 
 /**
  * Finds an intersection between x-axis and graph of function f between lower and upper bounds
@@ -48,15 +50,35 @@ function interceptAngular(r1: Vector, a1: Vector, o: Vector, theta: number, r2: 
   if (A_det === 0) {
     // Special case: f = b * sin(theta * t + g) - R2_det (no linear term)
 
+    console.log('asxasx');
+
     const j = Math.asin(R2_det / b);
     if (!isNaN(j)) {
 
-      let tContact = Math.min(
-        (Math.ceil((g - j) / Math.PI / 2) * 2 * Math.PI + j - g ) / theta,
-        (Math.ceil((g - Math.PI + j) / Math.PI / 2) * 2 * Math.PI + Math.PI - j - g ) / theta,
-      );
-      contact = new Vector(tContact, f(tContact));
+      // Find k for intersection after t=0
+      const k1 = Math.floor((theta > 0 ? 1 : 0) + (g - j) / Math.PI / 2);
+      const k2 = Math.floor((theta > 0 ? 1 : 0) + (g - Math.PI + j) / Math.PI / 2);
 
+      const tk = (k, o) => (k * 2 * Math.PI - g + (o == 0 ? j : Math.PI - j ) ) / theta;
+
+      const k0 = (tk(k1, 0) < tk(k2, 1)) ? (k1 * 2) : (k2 * 2 + 1);
+
+      // Loop over intersections
+      for (let k = k0; ; k += theta > 0 ? 1 : -1) {
+        const t1Curr = tk(Math.floor(k / 2), k % 2);
+
+        // is t1 not feasible?
+        if (0 > t1Curr || t1Curr > 1)
+          break;
+
+        // is t2 feasible?
+        const t2Curr = t2(t1Curr);
+        if (0 <= t2Curr && t2Curr <= 1) {
+          // contact found
+          contact = new Vector(t1Curr, f(t1Curr));
+          break;
+        }
+      }
     }
 
   } else {
@@ -71,51 +93,71 @@ function interceptAngular(r1: Vector, a1: Vector, o: Vector, theta: number, r2: 
       // are start and end on different sides of x-axis?
       if (start.y * end.y <= 0) {
         contact = findContactBisection(start, end, f);
+
+        const t2Contact = t2(contact.x);
+        if (!(0 <= t2Contact && t2Contact <= 1)) contact = null;
+
       }
 
     } else {
+      // bounds we get if we consider min and max value of sine
       let tL1 = (R2_det - b) / A_det;
       let tL2 = (R2_det + b) / A_det;
-
       // sort tL1 and tL2 (cool one-liner, yeah?)
       [tL1, tL2] = [Math.min(tL1, tL2), Math.max(tL1, tL2)];
 
-      const k0 = Math.floor((h + g) / 2 / Math.PI);
-      const k1 = Math.floor((theta * tL1 - h + g) / 2 / Math.PI);
-      const k2 = Math.ceil((theta * tL2 + h + g) / 2 / Math.PI);
+      const tMin = Math.max(0, tL1);
+      const tMax = Math.min(1, tL2);
 
-      const tk = (k, hPlus: boolean) => (2 * Math.PI * k + (hPlus ? h : -h) - g) / theta;
+      // function that returns t of a extreme for given k and upper
+      const tk = (k, upper: boolean) => (2 * Math.PI * k + (upper ? h : -h) - g) / theta;
 
-      const tk01 = tk(k0, false);
-      const tk02 = tk(k0, true);
-      const tk0 = tk02 < 0 ? tk02 : tk01;
+      // finding kMin and kMax (k values between which may be feasible solutions)
+      const kMin1 = Math.floor((theta * tMin - h + g) / 2 / Math.PI + (theta < 0 ? 1 : 0));
+      const kMin2 = Math.floor((theta * tMin + h + g) / 2 / Math.PI + (theta < 0 ? 1 : 0));
+      let kMin = tk(kMin1, true) < tk(kMin2, false) ? 2 * kMin2 + (0) : 2 * kMin1 + (1);
 
-      let extremePrev = new Vector(tk0, f(tk0));
-      sequentialExtremes: for (let k = k1; k <= k2; k++) {
-        for (let plusMinus = 0; plusMinus < 2; plusMinus++) {
-          let tCurr = tk(k, plusMinus == 1);
-          let extremeCurr = new Vector(tCurr, f(tCurr));
+      const kMax1 = Math.floor((theta * tMax - h + g) / 2 / Math.PI + (theta > 0 ? 1 : 0));
+      const kMax2 = Math.floor((theta * tMax + h + g) / 2 / Math.PI + (theta > 0 ? 1 : 0));
+      let kMax = tk(kMax1, true) > tk(kMax2, false) ? 2 * kMax2 + (0) : 2 * kMax1 + (1);
 
-          // are values on different sides of x-axis (or touch it)?
+      ps[0].innerHTML = '';
+      let extremePrev = null;
+      // loop over extremes
+      for (let k = kMin; ; k += kMin < kMax ? 1 : -1) {
+        let tCurr = Math.max(tMin, Math.min(tMax, tk(Math.floor(k / 2), k % 2 != 0)));
+        let extremeCurr = new Vector(tCurr, f(tCurr));
+
+        points.push(extremeCurr);
+        ps[0].innerHTML += k + ' ';
+
+        // for each pair
+        if (extremePrev) {
+
+          // if the values are on different sides of x-axis (or touch it)
           if (extremePrev.y * extremeCurr.y <= 0) {
 
+            // find contact
             contact = findContactBisection(extremePrev, extremeCurr, f);
 
             if (contact) {
 
+              // if contact is feasible
               const t2Contact = t2(contact.x);
               if (0 <= t2Contact && t2Contact <= 1) {
-                break sequentialExtremes;
+                // bingo
+                break;
               } else {
                 contact = null;
               }
 
             }
           }
-
-          extremePrev = extremeCurr;
         }
+        extremePrev = extremeCurr;
+        if (k == kMax) break;
       }
+      // ps[0].innerHTML = count.toString();
     }
   }
 
@@ -136,9 +178,9 @@ function go() {
   let a2 = new Vector(inp(5), inp(6));
   let t1 = inp(7);
 
+  points = [];
   let contact = interceptAngular(r1, a1, o, theta, r2, a2);
 
-  let points;
   renderer.clear();
   renderer.drawVector(r1, a1);
   renderer.drawVector(r1.sum(a1.product(t1)), o.rotation(theta * t1));
@@ -147,19 +189,36 @@ function go() {
   /* Coordinate system */
   let center = new Vector(400, 500);
   renderer.drawVector(new Vector(0, center.y), new Vector(10000, 0));
+  renderer.drawVector(new Vector(200, center.y - 100), new Vector(400, 0));
   renderer.drawVector(new Vector(center.x, 0), new Vector(0, 10000));
   const A_det = new Matrix(a1, a2).det();
   const R2_det = new Matrix(r2.difference(r1), a2).det();
   const g = Math.atan2(new Matrix(o, a2).det(), -o.multiplyScalar(a2));
   const b = a2.length * o.length;
   const f = (t) => A_det * t + b * Math.sin(theta * t + g) - R2_det;
+  const t2 = (t1) => (r1.x - r2.x + t1 * a1.x + o.rotation(t1 * theta).x) / a2.x;
+  let drawT = (ta, s = 7) =>
+    renderer.drawCross(center.sum(new Vector(ta * 100, f(ta) / 100)), s);
+  points.forEach(p => drawT(p.x));
   points = [];
-  for (let i = -10; i < 10; i += 0.001) {
+  for (let i = -5; i < 5; i += 0.001) {
     points.push(new Vector(i * 100, f(i) / 100));
   }
   renderer.drawLineString(center, points, 0);
-  let drawT = (ta, s = 7) =>
-    renderer.drawCross(center.sum(new Vector(ta * 100, f(ta) / 100)), s);
+
+  let tL1 = (R2_det - b) / A_det;
+  let tL2 = (R2_det + b) / A_det;
+  renderer.drawCross(center.sum(new Vector(tL1 * 100, 0)), 5);
+  renderer.drawCross(center.sum(new Vector(tL2 * 100, 0)), 5);
+  renderer.drawCross(center.sum(new Vector(0, 0)), 5);
+  renderer.drawCross(center.sum(new Vector(100, 0)), 5);
+
+  // renderer.setStyle(4);
+  // points = [];
+  // for (let i = -5; i < 5; i += 0.001) {
+  //   points.push(new Vector(i * 100, -t2(i) * 100));
+  // }
+  // renderer.drawLineString(center, points, 0);
 
   renderer.setStyle(2);
   if (contact) {
