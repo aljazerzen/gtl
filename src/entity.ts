@@ -18,6 +18,41 @@ export class Entity {
   public blocks: Block[] = [];
   controller: EntityController = new EntityController(this);
 
+  get inertia(): number {
+    let sum = 0;
+    for (let block of this.blocks)
+      sum += block.mass * Math.max(1, Math.pow(block.massPoint.r.length, 2));
+    return sum;
+  }
+
+  static createMockThruster(x: number, y: number): Entity {
+    let r = new Entity();
+    r.r = new Vector(x, y);
+    r.addBlocks([new Thruster(new Vector(80, 0), 40, 0), new Gyroscope(new Vector(100, -40), 40, 0)]);
+    r.f = Math.PI;
+    return r;
+  }
+
+  static createMock(x: number, y: number): Entity {
+    let r = new Entity();
+    r.r = new Vector(x, y);
+    r.addBlocks([
+      new Rectangle(new Vector(200, 450), new Vector(100, 100)),
+      new Rectangle(new Vector(542, 124), new Vector(200, 140)),
+    ]);
+    return r;
+  }
+
+  static createMockBorder() {
+    let r = new Entity();
+    r.r = new Vector(50, 50);
+    r.addBlocks([
+      new Rectangle(new Vector(0, 0), new Vector(20, 1000)),
+      new Rectangle(new Vector(40, 0), new Vector(1000, 20)),
+    ]);
+    return r;
+  }
+
   addBlocks(blocks: Block[]) {
     this.blocks.push(...blocks);
     const massPoint = this.massPoint();
@@ -35,20 +70,6 @@ export class Entity {
     let relative = this.blocks.reduce((mp, block) => mp.add(block.massPoint), new MassPoint());
 
     return new MassPoint(relative.r.rotation(this.f).add(this.r), relative.mass);
-  }
-
-  get inertia(): number {
-    let sum = 0;
-    for (let block of this.blocks)
-      sum += block.mass * Math.max(1, Math.pow(block.massPoint.r.length, 2));
-    return sum;
-  }
-
-  static createMockThruster(x: number, y: number): Entity {
-    let r = new Entity();
-    r.r = new Vector(x, y);
-    r.addBlocks([new Thruster(new Vector(80, 0), 40, 0), new Gyroscope(new Vector(100, -40), 40, 0)]);
-    return r;
   }
 
   force(): ForcePoint {
@@ -78,19 +99,6 @@ export class Entity {
     mp.rotate(this.f);
     mp.offset(this.r);
     return mp;
-  }
-
-  static createMock(x: number, y: number): Entity {
-    let r = new Entity();
-    r.r = new Vector(x, y);
-    r.addBlocks([
-      new Rectangle(new Vector(-5, 50), new Vector(50, 100)),
-      new Rectangle(new Vector(200, 450), new Vector(100, 100)),
-      new Rectangle(new Vector(542, 124), new Vector(200, 140)),
-      new Rectangle(new Vector(0, 0), new Vector(50, 1000)),
-      new Rectangle(new Vector(200, 1000), new Vector(1000, 50)),
-    ]);
-    return r;
   }
 
   thrustUnthrottled(): ForcePoint {

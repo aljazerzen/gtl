@@ -83,7 +83,9 @@ export class Line {
     const b = a2.length * o.length;
 
     const f = (t) => A_det * t + b * Math.sin(theta * t + g) - R2_det;
-    const t2 = (t1) => (r1.x - r2.x + t1 * a1.x + o.rotation(t1 * theta).x) / a2.x;
+    const t2 = (t1) => a2.x !== 0
+      ? (r1.x - r2.x + t1 * a1.x + o.rotation(t1 * theta).x) / a2.x
+      : (r1.y - r2.y + t1 * a1.y + o.rotation(t1 * theta).y) / a2.y;
     const r = (t2) => a2.product(t2).add(r2);
 
     let contact = null;

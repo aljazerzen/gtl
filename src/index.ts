@@ -13,7 +13,7 @@ let ctx = canvas.getContext('2d');
 let renderer = new Renderer(ctx);
 let engine = new StepperEngine(World.createMock());
 
-let controls = new EventHandler(engine.getWorld().entities[1].controller);
+let controls = new EventHandler(engine.getWorld().entities[2].controller);
 controls.setListeners();
 
 let hud = new Hud(controls);
