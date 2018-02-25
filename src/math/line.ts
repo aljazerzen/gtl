@@ -27,8 +27,16 @@ export class Line {
 
   }
 
+  length() {
+    return Math.sqrt((this.a.x - this.b.x) * (this.a.x - this.b.x) + (this.a.y - this.b.y) * (this.a.y - this.b.y));
+  }
+
   sum(r: Vector) {
     return new Line(this.a.sum(r), this.b.sum(r));
+  }
+
+  direction() {
+    return this.b.difference(this.a);
   }
 
   isIntersectedByHorizontalRay(point: Vector): boolean {
@@ -41,25 +49,22 @@ export class Line {
       (this.b.y - this.a.y) + this.a.x;
   }
 
-  intersection(line: Line): Vector {
-    const denominator = (this.a.x - this.b.x) * (line.a.y - line.b.y) -
-      (this.a.y - this.b.y) * (line.a.x - line.b.x);
+  intersection(line: Line) {
 
-    if (denominator === 0)
-      return null;
+    let WEC_P1 = this.a.difference(line.a).multiplyScalar(line.b.difference(line.a).perp());
+    let WEC_P2 = this.b.difference(line.a).multiplyScalar(line.b.difference(line.a).perp());
 
-    const t1 = (this.a.x * this.b.y - this.a.y * this.b.x);
-    const t2 = (line.a.x * line.b.y - line.a.y * line.b.x);
-    const i = new Vector(
-      (t1 * (line.a.x - line.b.x) - (this.a.x - this.b.x) * t2) / denominator,
-      (t1 * (line.a.y - line.b.y) - (this.a.y - this.b.y) * t2) / denominator,
-    );
+    if (WEC_P1 * WEC_P2 <= 0) {
+      let WEC_Q1 = line.a.difference(this.a).multiplyScalar(this.b.difference(this.a).perp());
+      let WEC_Q2 = line.b.difference(this.a).multiplyScalar(this.b.difference(this.a).perp());
 
-    if (i.x >= Math.min(this.a.x, this.b.x) && i.x <= Math.max(this.a.x, this.b.x) &&
-      i.y >= Math.min(this.a.y, this.b.y) && i.y <= Math.max(this.a.y, this.b.y) &&
-      i.x >= Math.min(line.a.x, line.b.x) && i.x <= Math.max(line.a.x, line.b.x) &&
-      i.y >= Math.min(line.a.y, line.b.y) && i.y <= Math.max(line.a.y, line.b.y))
-      return i;
+      if (WEC_Q1 * WEC_Q2 <= 0) {
+        return {
+          alphaP: WEC_P1 / (WEC_P1 - WEC_P2),
+          alphaQ: WEC_Q1 / (WEC_Q1 - WEC_Q2),
+        };
+      }
+    }
     return null;
   }
 

@@ -11,12 +11,13 @@ canvas.width = document.body.clientWidth;
 
 let ctx = canvas.getContext('2d');
 
-let renderer = new Renderer(ctx);
+export const renderer = new Renderer(ctx);
 let engine = new StepperEngine(World.createMock());
 
-let controls = new EventHandler(
-  engine.getWorld().entities.filter(e => !!e.blocks.filter(t => t instanceof Thruster)[0])[0].controller
-);
+let entityToControl =
+  engine.getWorld().entities.filter(e => !!e.blocks.filter(t => t instanceof Thruster)[0])[0]
+  || engine.getWorld().entities[0];
+let controls = new EventHandler(entityToControl.controller);
 controls.setListeners();
 
 let hud = new Hud(controls);

@@ -25,36 +25,48 @@ export class Polygon {
 
     let intersectionFound = false;
 
-    for (let posA = a.firstNode, start = true; posA != a.firstNode || start; posA = posA.next, start = false) {
+    /*let draw = (edgeA: Line, edgeB: Line) => {
+      renderer.clear();
+      renderer.setStyle(1);
+      renderer.drawPolygon(polyA, o, 0);
+      renderer.drawPolygon(polyB, o, 0);
+      renderer.setStyle(2);
+      renderer.drawLineString(o, [edgeA.a, edgeA.b], 0);
+      renderer.drawLineString(o, [edgeB.a, edgeB.b], 0);
+    };*/
 
-      if (!posA.intersection) {
-        let edgeA = new Line(posA.r, posA.nextNonIntersection().r);
+    let startA, endA = null;
+    while (endA != a.firstNode) {
+      startA = endA || a.firstNode;
+      endA = startA.nextNonIntersection();
 
-        // for (let polyStart = b.firstNode; polyStart != null; polyStart = polyStart.nextPoly) {
-        for (let posB = b.firstNode, start = true; posB != b.firstNode || start; posB = posB.next, start = false) {
+      let edgeA = new Line(startA.r, endA.r);
 
-          if (!posB.intersection) {
+      let startB, endB = null;
+      while (endB != b.firstNode) {
+        startB = endB || b.firstNode;
+        endB = startB.nextNonIntersection();
 
-            let intersection = new Line(posB.r, posB.nextNonIntersection().r).intersection(edgeA);
-            if (intersection) {
+        let edgeB = new Line(startB.r, endB.r);
+        let intersection = edgeA.intersection(edgeB);
 
-              intersectionFound = true;
+        if (intersection) {
+          let intersectionR = edgeA.a.sum(edgeA.direction().multiply(intersection.alphaP));
+          intersectionFound = true;
 
-              const newNodeA = new PolygonLinkedNode(intersection);
-              newNodeA.intersection = true;
-              newNodeA.alpha = posA.r.difference(intersection).length / posA.r.difference(posA.next.r).length;
+          const newNodeA = new PolygonLinkedNode(intersectionR);
+          newNodeA.intersection = true;
+          newNodeA.alpha = intersection.alphaP;
 
-              const newNodeB = new PolygonLinkedNode(intersection);
-              newNodeB.intersection = true;
-              newNodeB.alpha = posA.r.difference(intersection).length / posA.r.difference(posA.next.r).length;
+          const newNodeB = new PolygonLinkedNode(intersectionR);
+          newNodeB.intersection = true;
+          newNodeB.alpha = intersection.alphaQ;
 
-              newNodeA.neighbour = newNodeB;
-              newNodeB.neighbour = newNodeA;
+          newNodeA.neighbour = newNodeB;
+          newNodeB.neighbour = newNodeA;
 
-              a.insert(newNodeA, posA);
-              b.insert(newNodeB, posB);
-            }
-          }
+          a.insert(newNodeA, startA);
+          b.insert(newNodeB, startB);
         }
       }
     }
@@ -77,7 +89,7 @@ export class Polygon {
     }
 
     inside = polyA.containsPoint(b.firstNode.r);
-    for (let posB = a.firstNode, start = true; posB != a.firstNode || start; posB = posB.next, start = false) {
+    for (let posB = b.firstNode, start = true; posB != b.firstNode || start; posB = posB.next, start = false) {
       if (posB.intersection) {
         posB.entry = !inside;
         inside = !inside;
@@ -90,9 +102,9 @@ export class Polygon {
 
     for (let node = initialIntersection, s = true; node !== initialIntersection || s; s = false) {
       let direction = node.entry;
-      for (s = true; !node.intersection || s; s = false) {
+      for (let s2 = true; !node.intersection || s2; s2 = false) {
         points.push(node.r);
-        node = direction ? node.next : node.prev;
+        node = direction ? node.prev : node.next;
       }
       node = node.neighbour;
     }
@@ -224,11 +236,10 @@ export class Polygon {
       const intersection = movement.intersection(edge);
 
       if (intersection) {
-        const distance = intersection.difference(point).length;
 
-        if (!minDistance || distance < minDistance) {
-          minDistance = distance;
-          firstIntersection = intersection;
+        if (!minDistance || intersection.alphaP < minDistance) {
+          minDistance = intersection.alphaP;
+          firstIntersection = edge.a.sum(edge.direction().multiply(intersection.alphaP));
         }
       }
     }
@@ -264,10 +275,10 @@ export class Polygon {
     const p = this.points;
 
     let sumArea = 0, sumX = 0, sumY = 0;
-    for (let i = 0; i < p.length - 1; i++) {
-      sumArea += p[i].x * p[i + 1].y - p[i + 1].x * p[i].y;
-      sumX += (p[i].x + p[i + 1].x) * (p[i].x * p[i + 1].y - p[i + 1].x * p[i].y);
-      sumY += (p[i].y + p[i + 1].y) * (p[i].x * p[i + 1].y - p[i + 1].x * p[i].y);
+    for (let i = 0; i < p.length; i++) {
+      sumArea += p[i].x * p[(i + 1) % p.length].y - p[(i + 1) % p.length].x * p[i].y;
+      sumX += (p[i].x + p[(i + 1) % p.length].x) * (p[i].x * p[(i + 1) % p.length].y - p[(i + 1) % p.length].x * p[i].y);
+      sumY += (p[i].y + p[(i + 1) % p.length].y) * (p[i].x * p[(i + 1) % p.length].y - p[(i + 1) % p.length].x * p[i].y);
     }
 
     const area = sumArea / 2;

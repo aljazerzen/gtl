@@ -94,4 +94,8 @@ export class Vector {
     return new Vector(0, this.y);
   }
 
+  perp(): Vector {
+    return new Vector(-this.y, this.x);
+  }
+
 }

@@ -25,6 +25,8 @@ export class Renderer {
 
       this.setStyle(1);
       this.drawPolygon(entity.platform, entity.r, entity.f);
+      this.setStyle(4);
+      this.drawCross(entity.r, 6);
 
       entity.blocks.forEach((block: Block) => {
 

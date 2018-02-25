@@ -39,7 +39,10 @@ export class PlatformButton extends Button implements DragElement {
     } else {
 
       // place the platform
-      controls.ec.entity.addPlatform(this.ghost.absolute());
+      let poly = this.ghost.absolute();
+      poly.offset(controls.ec.entity.r.product(-1));
+      poly.rotate(-controls.ec.entity.f);
+      controls.ec.entity.addPlatform(poly);
 
       this.ghost = null;
     }

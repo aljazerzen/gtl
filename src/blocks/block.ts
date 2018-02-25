@@ -14,7 +14,7 @@ export abstract class Block {
 
   color: number = 2;
   mass: number;
-  massPoint: MassPoint;
+  massCentroid: Vector;
 
   offset: Vector;
   phi: number = 0;
@@ -42,7 +42,11 @@ export abstract class Block {
     const { area, centroid } = this.surface.areaAndCentroid();
 
     this.mass = Math.abs(area);
-    this.massPoint = new MassPoint(this.offset.sum(centroid), this.mass);
+    this.massCentroid = centroid;
+  }
+
+  massPointAbsolute() {
+    return new MassPoint(this.massCentroid.rotation(this.phi).add(this.offset), this.mass);
   }
 
   rotate(t: number): void {

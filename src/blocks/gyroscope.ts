@@ -16,29 +16,29 @@ export class Gyroscope extends Block {
 
     const f = Math.PI / 2 * d;
     const polygon = Polygon.fromRaw([
-      [-0.5, -2.5],
-      [-1.5, -2],
-      [-1, -1],
-      [-2, -1.5],
-      [-2.5, -0.5],
-
-      [-2.5, 0.5],
-      [-2, 1.5],
-      [-1, 1],
-      [-1.5, 2],
-      [-0.5, 2.5],
-
-      [0.5, 2.5],
-      [1.5, 2],
-      [1, 1],
-      [2, 1.5],
-      [2.5, 0.5],
-
-      [2.5, -0.5],
-      [2, -1.5],
-      [1, -1],
-      [1.5, -2],
       [0.5, -2.5],
+      [1.5, -2],
+      [1, -1],
+      [2, -1.5],
+      [2.5, -0.5],
+
+      [2.5, 0.5],
+      [2, 1.5],
+      [1, 1],
+      [1.5, 2],
+      [0.5, 2.5],
+
+      [-0.5, 2.5],
+      [-1.5, 2],
+      [-1, 1],
+      [-2, 1.5],
+      [-2.5, 0.5],
+
+      [-2.5, -0.5],
+      [-2, -1.5],
+      [-1, -1],
+      [-1.5, -2],
+      [-0.5, -2.5],
     ]);
     polygon.rotate(f);
     polygon.scale(width / 5);
@@ -51,7 +51,7 @@ export class Gyroscope extends Block {
 
   tick() {
     this.speed += this.power / 100;
-    this.phi += (this.oldSpeed + this.speed ) / 2;
+    this.phi += (this.oldSpeed + this.speed ) / 10;
     this.oldSpeed = this.speed;
   }
 
