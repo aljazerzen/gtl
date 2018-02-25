@@ -8,30 +8,30 @@ export class Thruster extends Block {
 
   throttle: number = 0;
   throttleTarget: number = 0;
+  thrustVector: Vector;
 
   constructor(r: Vector, width: number, d: number) {
     super(r);
 
     const f = Math.PI / 2 * d;
-    this.polygon = new Polygon([
-      new Vector(),
-      new Vector(width, 0),
-      new Vector(width, width),
-      new Vector(0.8 * width, width),
-      new Vector(width, 1.6 * width),
-      new Vector(0, 1.6 * width),
-      new Vector(0.2 * width, width),
-      new Vector(0, width),
-    ].map(v => v.rotation(f)));
-
+    const polygon = Polygon.fromRaw([
+      [0, 0],
+      [width, 0],
+      [width, width],
+      [0.8 * width, width],
+      [width, 1.6 * width],
+      [0, 1.6 * width],
+      [0.2 * width, width],
+      [0, width],
+    ]);
+    polygon.rotate(f);
+    this.surface = polygon;
     this.thrustVector = new Vector(0, -width * width * 0.1).rotation(f);
   }
 
   thrustPosition(): Vector {
-    return this.offset.sum(this.polygon.points[2].product(0.5)).sum(this.polygon.points[7].product(0.2));
+    return this.offset.sum(this.surface.points[2].product(0.5)).sum(this.surface.points[7].product(0.2));
   }
-
-  thrustVector: Vector;
 
   thrust(): ForcePoint {
     let f = this.thrustVector.product(this.throttle);
@@ -55,7 +55,6 @@ export class Thruster extends Block {
     this.throttle = this.throttle + Math.min(this.throttleTarget - this.throttle, 0.01);
   }
 
-  // Should be called only once per tick
   controlThrottle(throttle: number) {
     if (!isNaN(throttle) && this.throttle !== null)
       this.throttleTarget = Math.max(Math.min(throttle, 1), 0);

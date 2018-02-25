@@ -4,6 +4,7 @@ import { Vector } from './math/vector';
 import { Thruster } from './blocks/thruster';
 import { Hud } from './ui/hud';
 import { Polygon } from './math/polygon';
+import { Platform } from './platform/platform';
 
 export class Renderer {
 
@@ -21,8 +22,13 @@ export class Renderer {
     this.clear();
 
     world.entities.forEach(entity => {
+
+      this.setStyle(1);
+      this.drawPolygon(entity.platform, entity.r, entity.f);
+
       entity.blocks.forEach((block: Block) => {
 
+        this.setStyle(block.color);
         this.drawBlock(block, entity.r, entity.f);
 
         // thruster forces
@@ -72,7 +78,14 @@ export class Renderer {
 
   drawBlock(block: Block, entityPosition: Vector = new Vector, f: number = 0) {
     this.setStyle(block.color);
-    this.drawPolygon(entityPosition.sum(block.offset.rotation(f)), block.polygon, f);
+    let polygon = block.surface.clone();
+    polygon.rotate(block.phi);
+    this.drawPolygon(polygon, entityPosition.sum(block.offset.rotation(f)), f);
+  }
+
+  drawPlatform(platform: Platform) {
+    this.setStyle(1);
+    this.drawPolygon(platform.polygon, platform.offset, platform.phi);
   }
 
   drawCircle(s: Vector, r: number) {
@@ -82,13 +95,17 @@ export class Renderer {
   }
 
   /**
-   * @param r local vector (actual coordinates of point with coordinates (0,0))
    * @param polygon
+   * @param r local vector (actual coordinates of point with coordinates (0,0))
    * @param f angle of rotation around first point
    */
-  drawPolygon(r: Vector, polygon: Polygon, f: number) {
+  drawPolygon(polygon: Polygon, r?: Vector, f?: number) {
     this.ctx.beginPath();
-    polygon.points.map(point => this.lineTo(point.rotation(f).add(r)));
+    if (!r && !f)
+      for (let point of polygon.points)
+        this.lineTo(point);
+    else
+      polygon.points.map(point => this.lineTo(point.rotation(f).add(r)));
     this.ctx.fill();
   }
 

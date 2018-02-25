@@ -7,6 +7,8 @@ import { Thruster } from '../blocks/thruster';
 import { Slider } from './slider';
 import { BlockButton } from './blockButton';
 import { Block } from '../blocks/block';
+import { Platform } from '../platform/platform';
+import { PlatformButton } from './platformButton';
 
 export class Hud {
 
@@ -37,6 +39,9 @@ export class Hud {
     const y = document.body.clientHeight - 60;
     this.elements.push(...Object.keys(Block.TYPE)
       .map((b, i) => new BlockButton(new Vector(10 + i * 60, y), this, Block.TYPE[b]))
+    );
+    this.elements.push(...Object.keys(Platform.TYPE)
+      .map((b, i) => new PlatformButton(new Vector(10 + i * 60, y - 60), this, Platform.TYPE[b]))
     );
 
     eventHandler.onclickListeners.push(c => this.click(c, eventHandler));

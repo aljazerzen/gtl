@@ -1,14 +1,22 @@
 import { Block } from './blocks/block';
-import { Rectangle } from './blocks/rectangle';
 import { Vector } from './math/vector';
 import { MassPoint } from './math/mass-point';
 import { Thruster } from './blocks/thruster';
 import { ForcePoint } from './math/force-point';
-import { MultiPolygon } from './math/multi-polygon';
 import { EntityController } from './ui/entity-controller';
 import { Gyroscope } from './blocks/gyroscope';
+import { Polygon } from './math/polygon';
+import { World } from './world';
 
 export class Entity {
+
+
+  platform: Polygon;
+
+  constructor(private world: World, platform: Polygon) {
+    this.addPlatform(platform);
+  }
+
   r: Vector = new Vector();
   v: Vector = new Vector();
 
@@ -25,34 +33,6 @@ export class Entity {
     return sum;
   }
 
-  static createMockThruster(x: number, y: number): Entity {
-    let r = new Entity();
-    r.r = new Vector(x, y);
-    r.addBlocks([new Thruster(new Vector(80, 0), 40, 0), new Gyroscope(new Vector(100, -40), 40, 0)]);
-    r.f = Math.PI;
-    return r;
-  }
-
-  static createMock(x: number, y: number): Entity {
-    let r = new Entity();
-    r.r = new Vector(x, y);
-    r.addBlocks([
-      new Rectangle(new Vector(200, 450), new Vector(100, 100)),
-      new Rectangle(new Vector(542, 124), new Vector(200, 140)),
-    ]);
-    return r;
-  }
-
-  static createMockBorder() {
-    let r = new Entity();
-    r.r = new Vector(50, 50);
-    r.addBlocks([
-      new Rectangle(new Vector(0, 0), new Vector(20, 1000)),
-      new Rectangle(new Vector(40, 0), new Vector(1000, 20)),
-    ]);
-    return r;
-  }
-
   addBlocks(blocks: Block[]) {
     this.blocks.push(...blocks);
     const massPoint = this.massPoint();
@@ -62,12 +42,29 @@ export class Entity {
     this.r = massPoint.r;
   }
 
+  addPlatform(p: Polygon) {
+
+    p.offset(this.r.product(-1));
+    p.rotate(-this.f);
+    let newPolygons = Polygon.union(this.platform, p);
+
+    this.platform = newPolygons[0];
+
+    this.world.entities.push(
+      ...newPolygons.slice(1).map(poly => new Entity(this.world, poly))
+    );
+
+  }
+
   mass(): number {
     return this.blocks.reduce((acc, block) => acc + block.mass, 0);
   }
 
   massPoint(): MassPoint {
-    let relative = this.blocks.reduce((mp, block) => mp.add(block.massPoint), new MassPoint());
+    let { area, centroid } = this.platform.areaAndCentroid();
+    let platformMassPoint = new MassPoint(centroid, Math.abs(area));
+
+    let relative = this.blocks.reduce((mp, block) => mp.add(block.massPoint), platformMassPoint);
 
     return new MassPoint(relative.r.rotation(this.f).add(this.r), relative.mass);
   }
@@ -83,22 +80,11 @@ export class Entity {
     return new ForcePoint(relative.torque, relative.f.rotation(this.f));
   }
 
-  polygon() {
-    return new MultiPolygon(
-      this.blocks.map(b => {
-        let p = b.polygon.clone();
-        p.offset(b.offset);
-        return p;
-      })
-    );
-  }
-
   absolutePolygon() {
-    let mp = this.polygon();
-    mp.clone();
-    mp.rotate(this.f);
-    mp.offset(this.r);
-    return mp;
+    let r = this.platform.clone();
+    r.rotate(this.f);
+    r.offset(this.r);
+    return r;
   }
 
   thrustUnthrottled(): ForcePoint {

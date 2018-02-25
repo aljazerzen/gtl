@@ -17,6 +17,9 @@ export class Polygon {
     // Greiner–Hormann clipping algorithm
     // http://www.inf.usi.ch/hormann/papers/Greiner.1998.ECO.pdf
 
+    if (!polyA || !polyA.points.length) return [polyB];
+    if (!polyB || !polyB.points.length) return [polyA];
+
     let a = new PolygonLinked(polyA);
     let b = new PolygonLinked(polyB);
 

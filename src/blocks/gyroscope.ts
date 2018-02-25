@@ -15,7 +15,7 @@ export class Gyroscope extends Block {
     super(r);
 
     const f = Math.PI / 2 * d;
-    let polygon = Polygon.fromRaw([
+    const polygon = Polygon.fromRaw([
       [-0.5, -2.5],
       [-1.5, -2],
       [-1, -1],
@@ -42,7 +42,7 @@ export class Gyroscope extends Block {
     ]);
     polygon.rotate(f);
     polygon.scale(width / 5);
-    this.polygon = polygon;
+    this.surface = polygon;
   }
 
   controlPower(power: number) {
@@ -51,7 +51,7 @@ export class Gyroscope extends Block {
 
   tick() {
     this.speed += this.power / 100;
-    this.polygon.rotate((this.oldSpeed + this.speed ) / 2);
+    this.phi += (this.oldSpeed + this.speed ) / 2;
     this.oldSpeed = this.speed;
   }
 

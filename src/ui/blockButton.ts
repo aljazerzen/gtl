@@ -2,7 +2,6 @@ import { Button } from './button';
 import { DragElement, EventHandler } from './event-handler';
 import { Vector } from '../math/vector';
 import { Renderer } from '../renderer';
-import { Rectangle } from '../blocks/rectangle';
 import { Block } from '../blocks/block';
 import { Thruster } from '../blocks/thruster';
 import { Hud } from './hud';
@@ -19,9 +18,7 @@ export class BlockButton extends Button implements DragElement {
   }
 
   constructBlock(blockType: any) {
-    if (blockType === Rectangle) {
-      return new Rectangle(this.size.product(0.15), this.size.product(0.7));
-    } else if (blockType === Thruster) {
+    if (blockType === Thruster) {
       return new Thruster(
         this.size.product(0.1).sum(this.size.horizontal().product(0.18)),
         this.size.horizontal().length * 0.44,

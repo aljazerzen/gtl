@@ -12,54 +12,45 @@ export abstract class Block {
 
   static TYPE: { [blockName: string]: any } = {};
 
-  color: number = 1;
-
-  constructor(r: Vector) {
-    this._offset = r.clone();
-  }
-
+  color: number = 2;
   mass: number;
   massPoint: MassPoint;
 
-  private _offset: Vector;
-  private _polygon: Polygon;
+  offset: Vector;
+  phi: number = 0;
 
-  set offset(offset: Vector) {
-    this.massPoint.r.subtract(this._offset);
-    this._offset = offset;
-    this.massPoint.r.add(this._offset);
+  constructor(r: Vector, phi: number = 0) {
+    this.offset = r.clone();
+    this.phi = phi;
   }
 
-  get offset() {
-    return this._offset;
+  private _surface: Polygon;
+
+  get surface(): Polygon {
+    return this._surface;
   }
 
-  set polygon(points: Polygon) {
-    this._polygon = points;
-    this.polygonUpdated();
-  }
-
-  get polygon() {
-    return this._polygon;
-  }
-
-  polygonUpdated() {
-    const { area, centroid } = this.polygon.areaAndCentroid();
-
-    this.mass = Math.abs(area);
-    this.massPoint = new MassPoint(this.offset.sum(centroid), this.mass);
+  set surface(surface: Polygon) {
+    this._surface = surface;
+    this.surfaceUpdated();
   }
 
   tick() {
   }
 
+  surfaceUpdated() {
+    const { area, centroid } = this.surface.areaAndCentroid();
+
+    this.mass = Math.abs(area);
+    this.massPoint = new MassPoint(this.offset.sum(centroid), this.mass);
+  }
+
   rotate(t: number): void {
-    this.polygon.rotate(t);
-    this.polygonUpdated();
+    this.phi += t;
   }
 
   scale(k: number): void {
-    this.polygon.scale(k);
-    this.polygonUpdated();
+    this._surface.scale(k);
+    this.surfaceUpdated();
   }
 }
